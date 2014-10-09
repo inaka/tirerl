@@ -1,8 +1,11 @@
 PROJECT = tirerl
 
-DEPS = lager sync
-dep_lager = git https://github.com/basho/lager.git master
-dep_sync = git https://github.com/rustyio/sync.git master
+DEPS = lager sync jiffy shotgun poolboy
+dep_lager = git https://github.com/basho/lager.git 2.0.3
+dep_sync = git https://github.com/rustyio/sync.git HEAD
+dep_jiffy = git https://github.com/davisp/jiffy.git 0.13.2
+dep_shotgun = git https://github.com/inaka/shotgun.git 0.1.2
+dep_poolboy = git https://github.com/devinus/poolboy 1.3.0
 
 include erlang.mk
 

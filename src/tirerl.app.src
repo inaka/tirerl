@@ -6,8 +6,12 @@
   {applications,
     [kernel,
      stdlib,
-     lager
+     lager,
+     jiffy,
+     shotgun,
+     poolboy
     ]},
-  {modules, []}
+  {modules, []},
+  {mod, {tirerl_app, []}}
  ]
 }.
