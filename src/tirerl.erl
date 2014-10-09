@@ -52,8 +52,6 @@
 -export([clear_cache/1, clear_cache/2, clear_cache/3]).
 -export([segments/1, segments/2]).
 
--export([is_200/1, is_200_or_201/1]).
-
 % Mapping CRUD
 -export([put_mapping/4]).
 -export([get_mapping/3]).
@@ -537,26 +535,6 @@ is_alias(Destination, Index, Alias) when is_binary(Index) andalso is_binary(Alia
 get_alias(Destination, Index, Alias) when is_binary(Index) andalso is_binary(Alias) ->
     route_call(Destination, {get_alias, Index, Alias}, infinity).
 
--spec is_200(response()) -> boolean().
-is_200({error, _} = Response) -> Response;
-is_200(Response) ->
-    case lists:keyfind(status, 1, Response) of
-        {status, 200} -> true;
-        {status, <<"200">>} -> true;
-        _ -> false
-    end.
-
--spec is_200_or_201(response()) -> boolean().
-is_200_or_201({error, _} = Response) -> Response;
-is_200_or_201(Response) ->
-    case lists:keyfind(status, 1, Response) of
-        {status, 200} -> true;
-        {status, <<"200">>} -> true;
-        {status, 201} -> true;
-        {status, <<"201">>} -> true;
-        _ -> false
-    end.
-
 %% @doc Join a a list of strings into one string, adding a separator between
 %%      each string.
 -spec join([binary()], Sep::binary()) -> binary().
@@ -567,34 +545,14 @@ join(List, Sep) when is_list(List) ->
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 
-init([PoolName, Options0]) ->
-    {DecodeResponse, ConnectionOptions} =
-        case lists:keytake(binary_response, 1, Options0) of
-            {value, {binary_response, Decode}, Options1} -> {Decode, Options1};
-            false -> {true, Options0}
-        end,
-    {RetryInterval, ConnectionOptions1} =
-        case lists:keytake(retry_interval, 1, ConnectionOptions) of
-            {value, {retry_interval, Interval}, Options2} ->
-                {Interval, Options2};
-            false -> {0, ConnectionOptions}
-        end,
-    {RetryAmount, ConnectionOptions2} =
-        case lists:keytake(retry_amount, 1, ConnectionOptions1) of
-            {value, {retry_amount, Amount}, Options3} ->
-                {Amount, Options3};
-            false -> {1, ConnectionOptions1}
-        end,
-    Connection = connection(ConnectionOptions2),
+init([PoolName, ConnOpts]) ->
+    io:format("init/1: ~p~n", [ConnOpts]),
+    Connection = connection(ConnOpts),
     {ok, #state{pool_name = PoolName,
-                binary_response = DecodeResponse,
-                connection_options = ConnectionOptions,
-                connection = Connection,
-                retries_left = RetryAmount,
-                retry_interval = RetryInterval}}.
+                connection_options = ConnOpts,
+                connection = Connection}}.
 
 handle_call({stop}, _From, State) ->
-    thrift_client:close(State#state.connection),
     {stop, normal, ok, State};
 
 handle_call({_Request = health}, _From, State = #state{connection = Connection0}) ->
@@ -783,19 +741,15 @@ handle_call({_Request = get_alias, Index, Alias}, _From, State = #state{connecti
     {reply, Response, State#state{connection = Connection1}};
 
 handle_call(_Request, _From, State) ->
-    thrift_client:close(State#state.connection),
     {stop, unhandled_call, State}.
 
 handle_cast(_Request, State) ->
-    thrift_client:close(State#state.connection),
     {stop, unhandled_info, State}.
 
 handle_info(_Info, State) ->
-    thrift_client:close(State#state.connection),
     {stop, unhandled_info, State}.
 
-terminate(_Reason, State) ->
-    thrift_client:close(State#state.connection),
+terminate(_Reason, _State) ->
     ok.
 
 code_change(_OldVsn, State, _Extra) ->
@@ -804,85 +758,44 @@ code_change(_OldVsn, State, _Extra) ->
 %% ------------------------------------------------------------------
 %% Internal Function Definitions
 %% ------------------------------------------------------------------
+
 %% @doc Build a new connection
 -spec connection(params()) -> connection().
 connection(ConnectionOptions) ->
-    ThriftHost = proplists:get_value(thrift_host, ConnectionOptions, ?DEFAULT_THRIFT_HOST),
-    ThriftPort = proplists:get_value(thrift_port, ConnectionOptions, ?DEFAULT_THRIFT_PORT),
-    ThriftOptions = case lists:keyfind(thrift_options, 1, ConnectionOptions) of
-        {thrift_options, Options} -> Options;
-        false -> []
-    end,
-    {ok, Connection} = thrift_client_util:new(ThriftHost, ThriftPort, elasticsearch_thrift, ThriftOptions),
-    Connection.
+    Host = proplists:get_value(host, ConnectionOptions, ?DEFAULT_HOST),
+    Port = proplists:get_value(port, ConnectionOptions, ?DEFAULT_PORT),
+    #{host => Host, port => Port}.
 
 %% @doc Process the request over thrift
 %%      In case the network blipped and the thrift connection vanishes,
 %%      this will retry the request (w/ a new thrift connection)
 %%      before choking
--spec process_request(connection(), rest_request(), #state{}) -> {connection(), response()}.
-process_request(undefined, Request, State = #state{connection_options = ConnectionOptions}) ->
-    Connection = connection(ConnectionOptions),
+-spec process_request(connection(), rest_request(), #state{}) ->
+    {connection(), response()}.
+process_request(undefined, Request, State = #state{connection_options = ConnOpts}) ->
+    Connection = connection(ConnOpts),
     process_request(Connection, Request, State);
-process_request(Connection, Request, State = #state{binary_response = BinaryResponse}) ->
-    case do_request(Connection, Request, State) of
-        {error, closed, NewState} ->
-            error_or_retry({error, closed}, Connection, Request, NewState);
-        {error, econnrefused, NewState} ->
-            error_or_retry({error, econnrefused}, Connection, Request, NewState);
-        {Connection1, RestResponse} ->
-            {Connection1, process_response(BinaryResponse, RestResponse)}
-    end.
-
--spec increase_reconnect_interval(state()) -> state().
-increase_reconnect_interval(#state{retry_interval = Interval} = State) ->
-    if Interval < ?MAX_RECONNECT_INTERVAL ->
-            NewInterval = min(Interval + Interval, ?MAX_RECONNECT_INTERVAL),
-            State#state{retry_interval = NewInterval};
-       true ->
-            State
-    end.
-
--spec update_reconnect_state(state()) -> state().
-update_reconnect_state(State) ->
-    State1 = increase_reconnect_interval(State),
-    State2 = decrease_retries_left(State1),
-    State2.
-
--spec decrease_retries_left(state()) -> state().
-decrease_retries_left(#state{retries_left = N} = State) ->
-    State#state{retries_left = N - 1}.
-
--spec error_or_retry({error, atom()}, connection(), rest_request(), state()) ->
-                            {error, atom()} | {connection(), response()}.
-error_or_retry({error, Reason}, Connection,
-               Request, #state{retries_left = N, retry_interval = W} = State)
-  when N > 0 andalso W >= 0
-       andalso (Reason =:= closed orelse Reason =:= econnrefused) ->
-    timer:sleep(W),
-    ShorterRetryState = update_reconnect_state(State),
-    thrift_client:close(Connection),
-    process_request(undefined, Request, ShorterRetryState);
-error_or_retry(Error, _Connection, _Request, _State) ->
-    Error.
+process_request(Connection, Request, State) ->
+    do_request(Connection, Request, State).
 
 -spec do_request(connection(), rest_request(), #state{}) ->
                         {connection(),  {ok, rest_response()} | error()}
                             | {error, closed, state()}
                             | {error, econnrefused, state()}.
 do_request(Connection, Req, State) ->
+    io:format("Connection: ~p~n", [Connection]),
     {ok, Client} = shotgun:open("localhost", 9200),
     #restRequest{method = Method,
                  headers = Headers,
                  uri = Uri,
                  body = Body
                 } = Req,
-
+    io:format("~p~n", [Req]),
     Body1 = case Body of
                 Body when is_binary(Body) -> Body;
                 _ -> jiffy:encode(Body)
             end,
-
+    io:format("Body: ~p~n", [Body1]),
     try
         Response = case Method of
                        M when M == put; M == post; M == patch ->
@@ -890,7 +803,9 @@ do_request(Connection, Req, State) ->
                        _ ->
                            shotgun:Method(Client, Uri, Headers, #{})
                    end,
-        {Connection, Response}
+        io:format("Response: ~p~n", [Response]),
+        Response1 = process_response(Response),
+        {Connection, Response1}
     catch
         error:badarg ->
             {Connection, {error, badarg}};
@@ -902,24 +817,16 @@ do_request(Connection, Req, State) ->
         shotgun:close(Client)
     end.
 
--spec process_response(boolean(),
-                       {ok, rest_response()} | error() | exception()) ->
+-spec process_response({ok, rest_response()} | error() | exception()) ->
     response().
-process_response(_, {error, _} = Response) ->
+process_response({error, _} = Response) ->
     Response;
-process_response(true, {ok, #restResponse{status = Status, body = undefined}}) ->
-    [{status, erlang:integer_to_binary(Status)}];
-process_response(false, {ok, #restResponse{status = Status, body = undefined}}) ->
-    [{status, Status}];
-process_response(true, {ok, #restResponse{status = Status, body = Body}}) ->
-    [{status, erlang:integer_to_binary(Status)}, {body, Body}];
-process_response(false, {ok, #restResponse{status = Status, body = Body}}) ->
+process_response({ok, #{status_code := Status, body := Body}}) ->
     try
-        [{status, Status}, {body, jiffy:decode(Body, [return_maps])}]
+        #{status => Status,
+          body => jiffy:decode(Body, [return_maps])}
     catch
-        error:badarg ->
-            %% Body was not JSON, decoding failed
-            [{status, Status}, {body, Body}]
+        error:badarg -> [{status, Status}, {body, Body}]
     end.
 
 %% @doc Build a new rest request
@@ -1208,17 +1115,21 @@ route_call(Destination, Command, Timeout) ->
 -spec pool_call(fq_server_ref(), tuple(), timeout()) ->response().
 pool_call(FqServerRef, Command, Timeout) ->
     PoolId = registered_pool_name(FqServerRef),
-    TransactionFun = fun() ->
-            poolboy:transaction(PoolId, fun(Worker) ->
-                        gen_server:call(Worker, Command, Timeout)
-                end) end,
+    TransactionFun =
+        fun() ->
+                poolboy:transaction(PoolId,
+                                    fun(Worker) ->
+                                            %% io:format("~p~n", [{Worker, Command, Timeout}])
+                                            gen_server:call(Worker, Command, Timeout)
+                                    end)
+        end,
     try
         TransactionFun()
-    % If the pool doesnt' exist, the keyspace has not been set before
+        %% If the pool doesnt' exist, the keyspace has not been set before
     catch
         exit:{noproc, _} ->
-            start_pool(FqServerRef),
-            TransactionFun()
+            start_pool(FqServerRef)
+            %% TransactionFun()
     end.
 
 -spec join_list_sep([binary()], binary()) -> [any()].
@@ -1289,14 +1200,14 @@ dec2hex(N) when N >= 0 andalso N =< 9 ->
 -spec make_boolean_response(response(), #state{}) -> response().
 make_boolean_response({error, _} = Response, _) -> Response;
 make_boolean_response(Response, #state{binary_response = false}) when is_list(Response) ->
-    case is_200(Response) of
-        true -> [{result, true} | Response];
-        false -> [{result, false} | Response]
+    case Response#restResponse.status of
+        200 -> [{result, true} | Response];
+        _ -> [{result, false} | Response]
     end;
 make_boolean_response(Response, #state{binary_response = true}) when is_list(Response) ->
-    case is_200(Response) of
-        true -> [{result, <<"true">>} | Response];
-        false -> [{result, <<"false">>} | Response]
+    case Response#restResponse.status of
+        200 -> [{result, <<"true">>} | Response];
+        _ -> [{result, <<"false">>} | Response]
     end.
 
 %% @doc Fully qualify a server ref w/ a thrift host/port

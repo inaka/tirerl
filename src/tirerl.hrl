@@ -12,11 +12,11 @@
 
 %% struct restRequest
 
--record(restRequest, {method                    :: atom(),
-                      uri                       :: string() | binary(),
-                      parameters = dict:new()   :: dict:dict(),
-                      headers = dict:new()      :: dict:dict(),
-                      body = <<"">>             :: string() | binary()
+-record(restRequest, {method             :: atom(),
+                      uri                :: string() | binary(),
+                      parameters = #{}   :: map(),
+                      headers = #{}      :: map(),
+                      body = <<"">>      :: string() | binary()
                      }).
 
 %% struct restResponse
@@ -32,8 +32,8 @@
 -type rest_response()   :: #restResponse{}.
 -type response()        :: [tuple()] | error().
 -type rest_request()    :: #restRequest{}.
--type thrift_host()     :: undefined | string().
--type thrift_port()     :: undefined | integer().
+-type host()            :: undefined | string().
+-type tcp_port()        :: undefined | integer().
 -type connection()      :: any().
 -type node_name()       :: binary().
 -type index()           :: binary().
@@ -44,23 +44,22 @@
 -type client_name()     :: binary().
 -type registered_pool_name()   :: atom().
 -type server_ref()      :: atom() | pid() | client_name().
--type fq_server_ref()   :: {thrift_host(), thrift_port(), server_ref()}.
+-type fq_server_ref()   :: {host(), tcp_port(), server_ref()}.
 -type destination()     :: server_ref() | fq_server_ref().
 -type pool_name()       :: binary() | fq_server_ref().
 -type target()          :: atom() | pid().
 
 
 %% Defaults
--define(DEFAULT_THRIFT_HOST, "localhost").
--define(DEFAULT_THRIFT_PORT, 9200).
+-define(DEFAULT_HOST, "localhost").
+-define(DEFAULT_PORT, 9200).
 -define(DEFAULT_POOL_NAME, <<"default_tirerl_pool">>).
 -define(DEFAULT_POOL_OPTIONS, [{size, 5},
                                {max_overflow, 10}
                               ]).
 
--define(DEFAULT_CONNECTION_OPTIONS, [{thrift_host, ?DEFAULT_THRIFT_HOST},
-                                     {thrift_port, ?DEFAULT_THRIFT_PORT},
-                                     {binary_response, true}
+-define(DEFAULT_CONNECTION_OPTIONS, [{host, ?DEFAULT_HOST},
+                                     {port, ?DEFAULT_PORT}
                                     ]).
 -define(REGISTERED_NAME_PREFIX, "tirerl").
 -define(MAX_RECONNECT_INTERVAL, 30000).

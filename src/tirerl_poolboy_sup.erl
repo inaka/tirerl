@@ -12,31 +12,23 @@
 %% Supervisor callbacks
 -export([init/1]).
 
--define(SERVER, ?MODULE).
-
--define(WORKER(Restart, Module, Args), {Module, {Module, start_link, Args}, Restart, 5000, worker, [Module]}).
--define(SUPERVISOR(Restart, Module, Args), {Module, {Module, start_link, Args}, Restart, 5000, supervisor, [Module]}).
-
--type startlink_err() :: {'already_started', pid()} | 'shutdown' | term().
--type startlink_ret() :: {'ok', pid()} | 'ignore' | {'error', startlink_err()}.
-
--spec start_link() -> startlink_ret().
+-spec start_link() -> supervisor:startlink_ret().
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 -spec start_pool(pool_name(), params(), params()) -> supervisor:startchild_ret().
-start_pool(PoolName, PoolOptions, ConnectionOptions) when is_list(PoolOptions),
-                                                          is_list(ConnectionOptions) ->
+start_pool(PoolName, PoolOptions, ConnectionOptions)
+  when is_list(PoolOptions),
+       is_list(ConnectionOptions) ->
+    io:format("~p~n", [ConnectionOptions]),
     PoolSpec = pool_spec(PoolName, PoolOptions, ConnectionOptions),
-    supervisor:start_child(?SERVER, PoolSpec).
-
+    supervisor:start_child(?MODULE, PoolSpec).
 
 -spec stop_pool(pool_name()) -> ok | error().
 stop_pool(PoolName) ->
     PoolId = tirerl:registered_pool_name(PoolName),
-    supervisor:terminate_child(?SERVER, PoolId),
-    supervisor:delete_child(?SERVER, PoolId).
-
+    supervisor:terminate_child(?MODULE, PoolId),
+    supervisor:delete_child(?MODULE, PoolId).
 
 -spec init(Args :: term()) ->
     {ok,
@@ -65,9 +57,9 @@ init([]) ->
     % in pool_name / pool_options / connection_options in the environment (or by
     % setting it in your app.config)
     PoolOptions = application:get_env(tirerl, pool_options, [{size, 0},
-                                                                     {max_overflow, 0}]),
-    ConnectionOptions = application:get_env(tirerl, connection_options, []),
-    PoolSpecs = pool_spec({undefined, undefined, PoolName}, PoolOptions, ConnectionOptions),
+                                                             {max_overflow, 0}]),
+    ConnectionOptions = application:get_env(tirerl, connection_options, ?DEFAULT_CONNECTION_OPTIONS),
+    PoolSpecs = pool_spec({"locahost", 9200, PoolName}, PoolOptions, ConnectionOptions),
     {ok, {SupFlags, [PoolSpecs]}}.
 
 -spec pool_spec(pool_name(), params(), params()) -> supervisor:child_spec().
@@ -75,7 +67,7 @@ pool_spec({Host, Port, _} = PoolName, PoolOptions, _ConnectionOptions) ->
     PoolId = tirerl:registered_pool_name(PoolName),
     PoolArgs = [{name, {local, PoolId}},
                 {worker_module, tirerl_worker}] ++ PoolOptions,
-    ConnectionArgs = {Host, Port},
-    % Pass in pool_name to the connection_options since this is also the
-    %   keyspace, and is needed by init/1
+    ConnectionArgs = [{host, Host}, {post, Port}],
+    %% Pass in pool_name to the connection_options since this is also the
+    %% keyspace, and is needed by init/1
     poolboy:child_spec(PoolId, PoolArgs, ConnectionArgs).
