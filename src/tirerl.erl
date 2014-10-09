@@ -40,7 +40,10 @@
 -export([delete_doc/4, delete_doc/5]).
 -export([search/4, search/5]).
 -export([count/2, count/3, count/4, count/5]).
--export([delete_by_query/2, delete_by_query/3, delete_by_query/4, delete_by_query/5]).
+-export([delete_by_query/2,
+         delete_by_query/3,
+         delete_by_query/4,
+         delete_by_query/5]).
 -export([bulk/2, bulk/3, bulk/4]).
 
 %% Index helpers
@@ -65,7 +68,12 @@
 -export([get_alias/3]).
 
 %% gen_server callbacks
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+-export([init/1,
+         handle_call/3,
+         handle_cast/2,
+         handle_info/2,
+         terminate/2,
+         code_change/3]).
 
 -record(state, {
         binary_response = false             :: boolean(),
@@ -136,21 +144,30 @@ registered_pool_name({Host, Port, PoolName}) ->
 %% @doc Start a poolboy instance
 -spec start_pool(pool_name()) -> supervisor:startchild_ret().
 start_pool(PoolName) ->
-    PoolOptions = application:get_env(tirerl, pool_options, ?DEFAULT_POOL_OPTIONS),
-    ConnectionOptions = application:get_env(tirerl, connection_options, ?DEFAULT_CONNECTION_OPTIONS),
-    start_pool(PoolName, PoolOptions, ConnectionOptions).
+    PoolOptions = application:get_env(tirerl,
+                                      pool_options,
+                                      ?DEFAULT_POOL_OPTIONS),
+    ConnOpts = application:get_env(tirerl,
+                                   connection_options,
+                                   ?DEFAULT_CONNECTION_OPTIONS),
+    start_pool(PoolName, PoolOptions, ConnOpts).
 
 %% @doc Start a poolboy instance
 -spec start_pool(pool_name(), params()) -> supervisor:startchild_ret().
 start_pool(PoolName, PoolOptions) when is_list(PoolOptions) ->
-    ConnectionOptions = application:get_env(tirerl, connection_options, ?DEFAULT_CONNECTION_OPTIONS),
-    start_pool(PoolName, PoolOptions, ConnectionOptions).
+    ConnOpts = application:get_env(tirerl,
+                                   connection_options,
+                                   ?DEFAULT_CONNECTION_OPTIONS),
+    start_pool(PoolName, PoolOptions, ConnOpts).
 
 %% @doc Start a poolboy instance with appropriate Pool & Conn settings
--spec start_pool(pool_name(), params(), params()) -> supervisor:startchild_ret().
-start_pool(PoolName, PoolOptions, ConnectionOptions) when is_list(PoolOptions),
-                                                          is_list(ConnectionOptions) ->
-    tirerl_poolboy_sup:start_pool(fq_server_ref(PoolName), PoolOptions, ConnectionOptions).
+-spec start_pool(pool_name(), params(), params()) ->
+    supervisor:startchild_ret().
+start_pool(PoolName, PoolOptions, ConnOpts)
+  when is_list(PoolOptions),
+       is_list(ConnOpts) ->
+    ServerRef = fq_server_ref(PoolName),
+    tirerl_poolboy_sup:start_pool(ServerRef, PoolOptions, ConnOpts).
 
 %% @doc Stop a poolboy instance
 -spec stop_pool(pool_name()) -> ok | error().
@@ -172,7 +189,7 @@ cluster_state(Destination) ->
 -spec cluster_state(destination(), params()) -> response().
 %% @equiv state(Destination, Params).
 cluster_state(Destination, Params) when is_list(Params) ->
-    cluster_state(Destination, Params).
+    state(Destination, Params).
 
 %% @equiv state(Destination, []).
 -spec state(destination()) -> response().
@@ -199,7 +216,8 @@ nodes_info(Destination, NodeNames) when is_list(NodeNames) ->
 
 %% @doc Get the nodes_info of the  ElasticSearch cluster
 -spec nodes_info(destination(), [node_name()], params()) -> response().
-nodes_info(Destination, NodeNames, Params) when is_list(NodeNames), is_list(Params) ->
+nodes_info(Destination, NodeNames, Params)
+  when is_list(NodeNames), is_list(Params) ->
     route_call(Destination, {nodes_info, NodeNames, Params}, infinity).
 
 %% @equiv nodes_stats(Destination, [], []).
@@ -217,7 +235,8 @@ nodes_stats(Destination, NodeNames) when is_list(NodeNames) ->
 
 %% @doc Get the nodes_stats of the  ElasticSearch cluster
 -spec nodes_stats(destination(), [node_name()], params()) -> response().
-nodes_stats(Destination, NodeNames, Params) when is_list(NodeNames), is_list(Params) ->
+nodes_stats(Destination, NodeNames, Params)
+  when is_list(NodeNames), is_list(Params) ->
     route_call(Destination, {nodes_stats, NodeNames, Params}, infinity).
 
 %% @doc Get the status of an index/indices in the  ElasticSearch cluster
@@ -241,7 +260,8 @@ create_index(Destination, Index) when is_binary(Index) ->
 
 %% @doc Create an index in the ElasticSearch cluster
 -spec create_index(destination(), index(), doc()) -> response().
-create_index(Destination, Index, Doc) when is_binary(Index) andalso (is_binary(Doc) orelse is_list(Doc)) ->
+create_index(Destination, Index, Doc)
+  when is_binary(Index) andalso (is_binary(Doc) orelse is_map(Doc)) ->
     route_call(Destination, {create_index, Index, Doc}, infinity).
 
 %% @doc Delete all the indices in the ElasticSearch cluster
@@ -275,62 +295,124 @@ is_index(Destination, Indexes) when is_list(Indexes) ->
 
 %% @equiv count(Destination, ?ALL, [], Doc []).
 -spec count(destination(), doc()) -> response().
-count(Destination, Doc) when (is_binary(Doc) orelse is_list(Doc)) ->
+count(Destination, Doc) when (is_binary(Doc) orelse is_map(Doc)) ->
     count(Destination, ?ALL, [], Doc, []).
 
 %% @equiv count(Destination, ?ALL, [], Doc, Params).
 -spec count(destination(), doc(), params()) -> response().
-count(Destination, Doc, Params) when (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+count(Destination, Doc, Params)
+  when (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     count(Destination, ?ALL, [], Doc, Params).
 
 %% @equiv count(Destination, Index, [], Doc, Params).
 -spec count(destination(), index() | [index()], doc(), params()) -> response().
-count(Destination, Index, Doc, Params) when is_binary(Index) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+count(Destination, Index, Doc, Params)
+  when is_binary(Index)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     count(Destination, [Index], [], Doc, Params);
-count(Destination, Indexes, Doc, Params) when is_list(Indexes) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+count(Destination, Indexes, Doc, Params)
+  when is_list(Indexes)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     count(Destination, Indexes, [], Doc, Params).
 
 %% @doc Get the number of matches for a query
--spec count(destination(), index() | [index()], type() | [type()], doc(), params()) -> response().
-count(Destination, Index, Type, Doc, Params) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+-spec count(destination(),
+            index() | [index()],
+            type() | [type()],
+            doc(),
+            params()) -> response().
+count(Destination, Index, Type, Doc, Params)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     count(Destination, [Index], [Type], Doc, Params);
-count(Destination, Indexes, Type, Doc, Params) when is_list(Indexes) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+count(Destination, Indexes, Type, Doc, Params)
+  when is_list(Indexes)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     count(Destination, Indexes, [Type], Doc, Params);
-count(Destination, Index, Types, Doc, Params) when is_binary(Index) andalso is_list(Types) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+count(Destination, Index, Types, Doc, Params)
+  when is_binary(Index)
+       andalso is_list(Types)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     count(Destination, [Index], Types, Doc, Params);
-count(Destination, Indexes, Types, Doc, Params) when is_list(Indexes) andalso is_list(Types) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+count(Destination, Indexes, Types, Doc, Params)
+  when is_list(Indexes)
+       andalso is_list(Types)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     route_call(Destination, {count, Indexes, Types, Doc, Params}, infinity).
 
 %% @equiv delete_by_query(Destination, ?ALL, [], Doc []).
 -spec delete_by_query(destination(), doc()) -> response().
-delete_by_query(Destination, Doc) when (is_binary(Doc) orelse is_list(Doc)) ->
+delete_by_query(Destination, Doc) when (is_binary(Doc) orelse is_map(Doc)) ->
     delete_by_query(Destination, ?ALL, [], Doc, []).
 
 %% @equiv delete_by_query(Destination, ?ALL, [], Doc, Params).
 -spec delete_by_query(destination(), doc(), params()) -> response().
-delete_by_query(Destination, Doc, Params) when (is_binary(Doc) orelse is_list(Doc)), is_list(Params) ->
+delete_by_query(Destination, Doc, Params)
+  when (is_binary(Doc) orelse is_map(Doc)),
+       is_list(Params) ->
     delete_by_query(Destination, ?ALL, [], Doc, Params).
 
 %% @equiv delete_by_query(Destination, Index, [], Doc, Params).
--spec delete_by_query(destination(), index() | [index()], doc(), params()) -> response().
-delete_by_query(Destination, Index, Doc, Params) when is_binary(Index) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+-spec delete_by_query(destination(),
+                      index() | [index()],
+                      doc(),
+                      params()) -> response().
+delete_by_query(Destination, Index, Doc, Params)
+  when is_binary(Index)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     delete_by_query(Destination, [Index], [], Doc, Params);
-delete_by_query(Destination, Indexes, Doc, Params) when is_list(Indexes) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+delete_by_query(Destination, Indexes, Doc, Params)
+  when is_list(Indexes)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     delete_by_query(Destination, Indexes, [], Doc, Params).
 
 %% @doc Get the number of matches for a query
--spec delete_by_query(destination(), index() | [index()], type() | [type()], doc(), params()) -> response().
-delete_by_query(Destination, Index, Type, Doc, Params) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+-spec delete_by_query(destination(),
+                      index() | [index()],
+                      type() | [type()],
+                      doc(),
+                      params()) -> response().
+delete_by_query(Destination, Index, Type, Doc, Params)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     delete_by_query(Destination, [Index], [Type], Doc, Params);
-delete_by_query(Destination, Indexes, Type, Doc, Params) when is_list(Indexes) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+delete_by_query(Destination, Indexes, Type, Doc, Params)
+  when is_list(Indexes)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     delete_by_query(Destination, Indexes, [Type], Doc, Params);
-delete_by_query(Destination, Index, Types, Doc, Params) when is_binary(Index) andalso is_list(Types) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+delete_by_query(Destination, Index, Types, Doc, Params)
+  when is_binary(Index)
+       andalso is_list(Types)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     delete_by_query(Destination, [Index], Types, Doc, Params);
-delete_by_query(Destination, Indexes, Types, Doc, Params) when is_list(Indexes) andalso is_list(Types) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
-    route_call(Destination, {delete_by_query, Indexes, Types, Doc, Params}, infinity).
+delete_by_query(Destination, Indexes, Types, Doc, Params)
+  when is_list(Indexes)
+       andalso is_list(Types)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
+    route_call(Destination,
+               {delete_by_query, Indexes, Types, Doc, Params},
+               infinity).
 
 %% @doc Check if a type exists in an index/indices in the ElasticSearch cluster
--spec is_type(destination(), index() | [index()], type() | [type()]) -> response().
+-spec is_type(destination(), index() | [index()], type() | [type()]) ->
+    response().
 is_type(Destination, Index, Type) when is_binary(Index), is_binary(Type) ->
     is_type(Destination, [Index], [Type]);
 is_type(Destination, Indexes, Type) when is_list(Indexes), is_binary(Type) ->
@@ -342,89 +424,135 @@ is_type(Destination, Indexes, Types) when is_list(Indexes), is_list(Types) ->
 
 %% @equiv insert_doc(Destination, Index, Type, Id, Doc, []).
 -spec insert_doc(destination(), index(), type(), id(), doc()) -> response().
-insert_doc(Destination, Index, Type, Id, Doc) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) ->
+insert_doc(Destination, Index, Type, Id, Doc)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc)) ->
     insert_doc(Destination, Index, Type, Id, Doc, []).
 
 %% @doc Insert a doc into the ElasticSearch cluster
--spec insert_doc(destination(), index(), type(), id(), doc(), params()) -> response().
-insert_doc(Destination, Index, Type, Id, Doc, Params) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
-    route_call(Destination, {insert_doc, Index, Type, Id, Doc, Params}, infinity).
+-spec insert_doc(destination(), index(), type(), id(), doc(), params()) ->
+    response().
+insert_doc(Destination, Index, Type, Id, Doc, Params)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
+    route_call(Destination,
+               {insert_doc, Index, Type, Id, Doc, Params},
+               infinity).
 
 %% @equiv update_doc(Destination, Index, Type, Id, Doc, []).
 -spec update_doc(destination(), index(), type(), id(), doc()) -> response().
-update_doc(Destination, Index, Type, Id, Doc) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) ->
+update_doc(Destination, Index, Type, Id, Doc)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso  is_binary(Id)
+       andalso (is_binary(Doc) orelse is_map(Doc)) ->
     update_doc(Destination, Index, Type, Id, Doc, []).
 
 %% @doc Insert a doc into the ElasticSearch cluster
--spec update_doc(destination(), index(), type(), id(), doc(), params()) -> response().
-update_doc(Destination, Index, Type, Id, Doc, Params) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
-    route_call(Destination, {update_doc, Index, Type, Id, Doc, Params}, infinity).
+-spec update_doc(destination(), index(), type(), id(), doc(), params()) ->
+    response().
+update_doc(Destination, Index, Type, Id, Doc, Params)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso is_binary(Id)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
+    route_call(Destination,
+               {update_doc, Index, Type, Id, Doc, Params},
+               infinity).
 
 %% @doc Checks to see if the doc exists
 -spec is_doc(destination(), index(), type(), id()) -> response().
-is_doc(Destination, Index, Type, Id) when is_binary(Index), is_binary(Type) ->
+is_doc(Destination, Index, Type, Id)
+  when is_binary(Index), is_binary(Type), is_binary(Id) ->
     route_call(Destination, {is_doc, Index, Type, Id}, infinity).
 
 %% @equiv get_doc(Destination, Index, Type, Id, []).
 -spec get_doc(destination(), index(), type(), id()) -> response().
-get_doc(Destination, Index, Type, Id) when is_binary(Index), is_binary(Type) ->
+get_doc(Destination, Index, Type, Id)
+  when is_binary(Index), is_binary(Type) ->
     get_doc(Destination, Index, Type, Id, []).
 
 %% @doc Get a doc from the ElasticSearch cluster
 -spec get_doc(destination(), index(), type(), id(), params()) -> response().
-get_doc(Destination, Index, Type, Id, Params) when is_binary(Index), is_binary(Type), is_list(Params)->
+get_doc(Destination, Index, Type, Id, Params)
+  when is_binary(Index),
+       is_binary(Type),
+       is_binary(Id),
+       is_list(Params) ->
     route_call(Destination, {get_doc, Index, Type, Id, Params}, infinity).
 
 %% @equiv mget_doc(Destination, <<>>, <<>>, Doc)
 -spec mget_doc(destination(), doc()) -> response().
-mget_doc(Destination, Doc) when (is_binary(Doc) orelse is_list(Doc)) ->
+mget_doc(Destination, Doc) when (is_binary(Doc) orelse is_map(Doc)) ->
     mget_doc(Destination, <<>>, <<>>, Doc).
 
 %% @equiv mget_doc(Destination, Index, <<>>, Doc)
 -spec mget_doc(destination(), index(), doc()) -> response().
-mget_doc(Destination, Index, Doc) when is_binary(Index) andalso (is_binary(Doc) orelse is_list(Doc))->
+mget_doc(Destination, Index, Doc)
+  when is_binary(Index)
+       andalso (is_binary(Doc) orelse is_map(Doc))->
     mget_doc(Destination, Index, <<>>, Doc).
 
 %% @doc Get a doc from the ElasticSearch cluster
 -spec mget_doc(destination(), index(), type(), doc()) -> response().
-mget_doc(Destination, Index, Type, Doc) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc))->
+mget_doc(Destination, Index, Type, Doc)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc))->
     route_call(Destination, {mget_doc, Index, Type, Doc}, infinity).
 
 %% @equiv delete_doc(Destination, Index, Type, Id, []).
 -spec delete_doc(destination(), index(), type(), id()) -> response().
-delete_doc(Destination, Index, Type, Id) when is_binary(Index), is_binary(Type) ->
+delete_doc(Destination, Index, Type, Id)
+  when is_binary(Index), is_binary(Type) ->
     delete_doc(Destination, Index, Type, Id, []).
 %% @doc Delete a doc from the ElasticSearch cluster
 -spec delete_doc(destination(), index(), type(), id(), params()) -> response().
-delete_doc(Destination, Index, Type, Id, Params) when is_binary(Index), is_binary(Type), is_list(Params)->
+delete_doc(Destination, Index, Type, Id, Params)
+  when is_binary(Index), is_binary(Type), is_binary(Id), is_list(Params)->
     route_call(Destination, {delete_doc, Index, Type, Id, Params}, infinity).
 
 %% @equiv search(Destination, Index, Type, Doc, []).
 -spec search(destination(), index(), type(), doc()) -> response().
-search(Destination, Index, Type, Doc) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc))->
+search(Destination, Index, Type, Doc)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc))->
     search(Destination, Index, Type, Doc, []).
 %% @doc Search for docs in the ElasticSearch cluster
 -spec search(destination(), index(), type(), doc(), params()) -> response().
-search(Destination, Index, Type, Doc, Params) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) andalso is_list(Params) ->
+search(Destination, Index, Type, Doc, Params)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc))
+       andalso is_list(Params) ->
     route_call(Destination, {search, Index, Type, Doc, Params}, infinity).
 
 %% @doc Perform bulk operations on the ElasticSearch cluster
 -spec bulk(destination(), doc()) -> response().
-bulk(Destination, Doc) when (is_binary(Doc) orelse is_list(Doc)) ->
+bulk(Destination, Doc) when (is_binary(Doc) orelse is_map(Doc)) ->
     bulk(Destination, <<>>, <<>>, Doc).
 
 %% @doc Perform bulk operations on the ElasticSearch cluster
 %% with a default index
 -spec bulk(destination(), index(), doc()) -> response().
-bulk(Destination, Index, Doc) when is_binary(Index) andalso (is_binary(Doc) orelse is_list(Doc)) ->
+bulk(Destination, Index, Doc)
+  when is_binary(Index)
+       andalso (is_binary(Doc) orelse is_map(Doc)) ->
     bulk(Destination, Index, <<>>, Doc).
 
 %% @doc Perform bulk operations on the ElasticSearch cluster
 %% with a default index and a default type
 -spec bulk(destination(), index(), type(), doc()) -> response().
-bulk(Destination, Index, Type, Doc) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) ->
+bulk(Destination, Index, Type, Doc)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc)) ->
     route_call(Destination, {bulk, Index, Type, Doc}, infinity).
-
 
 %% @equiv refresh(Destination, ?ALL).
 %% @doc Refresh all indices
@@ -493,60 +621,81 @@ clear_cache(Destination, Indexes) when is_list(Indexes) ->
 
 %% @equiv clear_cache(Destination, Indexes, []).
 -spec clear_cache(destination(), index() | [index()], params()) -> response().
-clear_cache(Destination, Index, Params) when is_binary(Index), is_list(Params) ->
+clear_cache(Destination, Index, Params)
+  when is_binary(Index), is_list(Params) ->
     clear_cache(Destination, [Index], Params);
-clear_cache(Destination, Indexes, Params) when is_list(Indexes), is_list(Params) ->
+clear_cache(Destination, Indexes, Params)
+  when is_list(Indexes), is_list(Params) ->
     route_call(Destination, {clear_cache, Indexes, Params}, infinity).
 
 
 %% @doc Insert a mapping into an ElasticSearch index
--spec put_mapping(destination(), index() | [index()], type(), doc()) -> response().
-put_mapping(Destination, Index, Type, Doc) when is_binary(Index) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) ->
+-spec put_mapping(destination(), index() | [index()], type(), doc()) ->
+    response().
+put_mapping(Destination, Index, Type, Doc)
+  when is_binary(Index)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc)) ->
     put_mapping(Destination, [Index], Type, Doc);
-put_mapping(Destination, Indexes, Type, Doc) when is_list(Indexes) andalso is_binary(Type) andalso (is_binary(Doc) orelse is_list(Doc)) ->
+put_mapping(Destination, Indexes, Type, Doc)
+  when is_list(Indexes)
+       andalso is_binary(Type)
+       andalso (is_binary(Doc) orelse is_map(Doc)) ->
     route_call(Destination, {put_mapping, Indexes, Type, Doc}, infinity).
 
 %% @doc Get a mapping from an ElasticSearch index
 -spec get_mapping(destination(), index() | [index()], type()) -> response().
-get_mapping(Destination, Index, Type) when is_binary(Index) andalso is_binary(Type) ->
+get_mapping(Destination, Index, Type)
+  when is_binary(Index) andalso is_binary(Type) ->
     get_mapping(Destination, [Index], Type);
-get_mapping(Destination, Indexes, Type) when is_list(Indexes) andalso is_binary(Type) ->
+get_mapping(Destination, Indexes, Type)
+  when is_list(Indexes) andalso is_binary(Type) ->
     route_call(Destination, {get_mapping, Indexes, Type}, infinity).
 
 %% @doc Delete a mapping from an ElasticSearch index
 -spec delete_mapping(destination(), index() | [index()], type()) -> response().
-delete_mapping(Destination, Index, Type) when is_binary(Index) andalso is_binary(Type) ->
+delete_mapping(Destination, Index, Type)
+  when is_binary(Index) andalso is_binary(Type) ->
     delete_mapping(Destination, [Index], Type);
-delete_mapping(Destination, Indexes, Type) when is_list(Indexes) andalso is_binary(Type) ->
+delete_mapping(Destination, Indexes, Type)
+  when is_list(Indexes) andalso is_binary(Type) ->
     route_call(Destination, {delete_mapping, Indexes, Type}, infinity).
 
 %% @doc Operate on aliases (as compared to 'alias')
 -spec aliases(destination(), doc()) -> response().
-aliases(Destination, Doc) when (is_binary(Doc) orelse is_list(Doc)) ->
+aliases(Destination, Doc) when (is_binary(Doc) orelse is_map(Doc)) ->
     route_call(Destination, {aliases, Doc}, infinity).
 
 %% @doc Insert an alias (as compared to 'aliases')
 -spec insert_alias(destination(), index(), index()) -> response().
-insert_alias(Destination, Index, Alias) when is_binary(Index) andalso is_binary(Alias) ->
+insert_alias(Destination, Index, Alias)
+  when is_binary(Index)
+       andalso is_binary(Alias) ->
     route_call(Destination, {insert_alias, Index, Alias}, infinity).
 %% @doc Insert an alias with options(as compared to 'aliases')
 -spec insert_alias(destination(), index(), index(), doc()) -> response().
-insert_alias(Destination, Index, Alias, Doc) when is_binary(Index) andalso is_binary(Alias) andalso (is_binary(Doc) orelse is_list(Doc)) ->
+insert_alias(Destination, Index, Alias, Doc)
+  when is_binary(Index)
+       andalso is_binary(Alias)
+       andalso (is_binary(Doc) orelse is_map(Doc)) ->
     route_call(Destination, {insert_alias, Index, Alias, Doc}, infinity).
 
 %% @doc Delete an alias (as compared to 'aliases')
 -spec delete_alias(destination(), index(), index()) -> response().
-delete_alias(Destination, Index, Alias) when is_binary(Index) andalso is_binary(Alias) ->
+delete_alias(Destination, Index, Alias)
+  when is_binary(Index) andalso is_binary(Alias) ->
     route_call(Destination, {delete_alias, Index, Alias}, infinity).
 
 %% @doc Checks if an alias exists (Alias can be a string with a wildcard)
 -spec is_alias(destination(), index(), index()) -> response().
-is_alias(Destination, Index, Alias) when is_binary(Index) andalso is_binary(Alias) ->
+is_alias(Destination, Index, Alias)
+  when is_binary(Index) andalso is_binary(Alias) ->
     route_call(Destination, {is_alias, Index, Alias}, infinity).
 
 %% @doc Gets an alias(or more, based on the string)
 -spec get_alias(destination(), index(), index()) -> response().
-get_alias(Destination, Index, Alias) when is_binary(Index) andalso is_binary(Alias) ->
+get_alias(Destination, Index, Alias)
+  when is_binary(Index) andalso is_binary(Alias) ->
     route_call(Destination, {get_alias, Index, Alias}, infinity).
 
 %% @doc Join a a list of strings into one string, adding a separator between
@@ -605,20 +754,21 @@ connection(ConnectionOptions) ->
 %%      In case the network blipped and the thrift connection vanishes,
 %%      this will retry the request (w/ a new thrift connection)
 %%      before choking
--spec process_request(connection(), rest_request(), #state{}) ->
+-spec process_request(connection(), rest_request(), state()) ->
     {connection(), response()}.
-process_request(undefined, Request, State = #state{connection_options = ConnOpts}) ->
+process_request(undefined,
+                Request,
+                State = #state{connection_options = ConnOpts}) ->
     Connection = connection(ConnOpts),
     process_request(Connection, Request, State);
 process_request(Connection, Request, State) ->
     do_request(Connection, Request, State).
 
--spec do_request(connection(), rest_request(), #state{}) ->
+-spec do_request(connection(), rest_request(), state()) ->
                         {connection(),  {ok, rest_response()} | error()}
                             | {error, closed, state()}
                             | {error, econnrefused, state()}.
 do_request(Connection, Req, State) ->
-
     {ok, Client} = shotgun:open("localhost", 9200),
 
     #{method := Method, uri := Uri} = Req,
@@ -669,253 +819,184 @@ make_request({state, Params}) ->
     Uri = make_uri([?STATE], Params),
     #{method => get, uri => Uri};
 
-make_request({nodes_info, NodeNames, Params})
-  when is_list(NodeNames),
-       is_list(Params) ->
+make_request({nodes_info, NodeNames, Params}) ->
     NodeNameList = join(NodeNames, <<",">>),
     Uri = make_uri([?NODES, NodeNameList], Params),
     #{method => get, uri => Uri};
 
-make_request({nodes_stats, NodeNames, Params})
-  when is_list(NodeNames),
-       is_list(Params) ->
+make_request({nodes_stats, NodeNames, Params}) ->
     NodeNameList = join(NodeNames, <<",">>),
     Uri = make_uri([?NODES, NodeNameList, ?STATS], Params),
     #{method => get, uri => Uri};
 
-make_request({status, Index}) when is_list(Index) ->
+make_request({status, Index}) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?STATUS], <<"/">>),
     #{method => get, uri => Uri};
 
-make_request({indices_stats, Index}) when is_list(Index) ->
+make_request({indices_stats, Index}) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?INDICES_STATS], <<"/">>),
     #{method => get, uri => Uri};
 
-make_request({create_index, Index, Doc})
-  when is_binary(Index) andalso
-       (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({create_index, Index, Doc}) ->
     #{method => put, uri => Index, body => Doc};
 
-make_request({delete_index, Index}) when is_list(Index) ->
+make_request({delete_index, Index}) ->
     IndexList = join(Index, <<",">>),
     #{method => delete, uri => IndexList};
 
-make_request({open_index, Index}) when is_binary(Index) ->
+make_request({open_index, Index}) ->
     Uri = join([Index, ?OPEN], <<"/">>),
     #{method => post, uri => Uri};
 
-make_request({close_index, Index}) when is_binary(Index) ->
+make_request({close_index, Index}) ->
     Uri = join([Index, ?CLOSE], <<"/">>),
     #{method => post, uri => Uri};
 
-make_request({count, Index, Type, Doc, Params})
-  when is_list(Index) andalso
-       is_list(Type) andalso
-       (is_binary(Doc) orelse is_list(Doc)) andalso
-       is_list(Params) ->
+make_request({count, Index, Type, Doc, Params}) ->
     IndexList = join(Index, <<",">>),
     TypeList = join(Type, <<",">>),
     Uri = make_uri([IndexList, TypeList, ?COUNT], Params),
     #{method => get, uri => Uri, body => Doc};
 
-make_request({delete_by_query, Index, Type, Doc, Params})
-  when is_list(Index) andalso
-       is_list(Type) andalso
-       (is_binary(Doc) orelse is_list(Doc)) andalso
-       is_list(Params) ->
+make_request({delete_by_query, Index, Type, Doc, Params}) ->
     IndexList = join(Index, <<",">>),
     TypeList = join(Type, <<",">>),
     Uri = make_uri([IndexList, TypeList, ?QUERY], Params),
     #{method => delete, uri => Uri, body => Doc};
 
-make_request({is_index, Index}) when is_list(Index) ->
+make_request({is_index, Index}) ->
     IndexList = join(Index, <<",">>),
     #{method => head, uri => IndexList};
 
-make_request({is_type, Index, Type}) when is_list(Index),
-                                        is_list(Type) ->
+make_request({is_type, Index, Type}) ->
     IndexList = join(Index, <<",">>),
     TypeList = join(Type, <<",">>),
     Uri = join([IndexList, TypeList], <<"/">>),
     #{method => head, uri => Uri};
 
-make_request({insert_doc, Index, Type, undefined, Doc, Params})
-  when is_binary(Index) andalso
-       is_binary(Type) andalso
-       (is_binary(Doc) orelse is_list(Doc)) andalso
-       is_list(Params) ->
+make_request({insert_doc, Index, Type, undefined, Doc, Params}) ->
     Uri = make_uri([Index, Type], Params),
     #{method => post,
       uri => Uri,
       body => Doc};
 
-make_request({insert_doc, Index, Type, Id, Doc, Params})
-  when is_binary(Index) andalso
-       is_binary(Type) andalso
-       is_binary(Id) andalso
-       (is_binary(Doc) orelse is_list(Doc)) andalso
-       is_list(Params) ->
+make_request({insert_doc, Index, Type, Id, Doc, Params}) ->
     Uri = make_uri([Index, Type, Id], Params),
     #{method => put,
       uri => Uri,
       body => Doc};
 
-make_request({update_doc, Index, Type, Id, Doc, Params})
-  when is_binary(Index) andalso
-       is_binary(Type) andalso
-       is_binary(Id) andalso
-       (is_binary(Doc) orelse is_list(Doc)) andalso
-       is_list(Params) ->
+make_request({update_doc, Index, Type, Id, Doc, Params}) ->
     Uri = make_uri([Index, Type, Id, ?UPDATE], Params),
     #{method => post,
       uri => Uri,
       body => Doc};
 
-make_request({is_doc, Index, Type, Id})
-  when is_binary(Index),
-       is_binary(Type),
-       is_binary(Id) ->
+make_request({is_doc, Index, Type, Id}) ->
     Uri = make_uri([Index, Type, Id], []),
     #{method => head, uri => Uri};
 
-make_request({get_doc, Index, Type, Id, Params})
-  when is_binary(Index),
-       is_binary(Type),
-       is_binary(Id),
-       is_list(Params) ->
+make_request({get_doc, Index, Type, Id, Params}) ->
     Uri = make_uri([Index, Type, Id], Params),
     #{method => get, uri => Uri};
 
-make_request({mget_doc, Index, Type, Doc})
-  when is_binary(Index) andalso
-       is_binary(Type) andalso
-       (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({mget_doc, Index, Type, Doc}) ->
     Uri = make_uri([Index, Type, ?MGET], []),
     #{method => get, uri => Uri, body => Doc};
-make_request({delete_doc, Index, Type, Id, Params})
-  when is_binary(Index),
-       is_binary(Type),
-       is_binary(Id),
-       is_list(Params) ->
+
+make_request({delete_doc, Index, Type, Id, Params}) ->
     Uri = make_uri([Index, Type, Id], Params),
     #{method => delete, uri => Uri};
 
-make_request({search, Index, Type, Doc, Params})
-  when is_binary(Index) andalso
-       is_binary(Type) andalso
-       (is_binary(Doc) orelse is_list(Doc)) andalso
-       is_list(Params) ->
+make_request({search, Index, Type, Doc, Params}) ->
     Uri = make_uri([Index, Type, ?SEARCH], Params),
     #{method => get,
       uri => Uri,
       body => Doc};
-make_request({bulk, <<>>, <<>>, Doc})
-  when (is_binary(Doc) orelse is_list(Doc)) ->
+
+make_request({bulk, <<>>, <<>>, Doc}) ->
     Uri = make_uri([?BULK], []),
     #{method => post,
       uri => Uri,
       body => Doc};
-make_request({bulk, Index, <<>>, Doc})
-  when is_binary(Index) andalso
-       (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({bulk, Index, <<>>, Doc}) ->
     Uri = make_uri([Index, ?BULK], []),
     #{method => post,
       uri => Uri,
       body => Doc};
-make_request({bulk, Index, Type, Doc})
-  when is_binary(Index) andalso
-       is_binary(Type) andalso
-       (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({bulk, Index, Type, Doc}) ->
     Uri = make_uri([Index, Type, ?BULK], []),
     #{method => post,
       uri => Uri,
       body => Doc};
 
-make_request({refresh, Index}) when is_list(Index) ->
+make_request({refresh, Index}) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?REFRESH], <<"/">>),
     #{method => post, uri => Uri};
 
-make_request({flush, Index}) when is_list(Index) ->
+make_request({flush, Index}) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?FLUSH], <<"/">>),
     #{method => post, uri => Uri};
 
-make_request({optimize, Index}) when is_list(Index) ->
+make_request({optimize, Index}) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?OPTIMIZE], <<"/">>),
     #{method => post, uri => Uri};
 
-make_request({segments, Index}) when is_list(Index) ->
+make_request({segments, Index}) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?SEGMENTS], <<"/">>),
     #{method => get, uri => Uri};
 
-make_request({clear_cache, Index, Params}) when is_list(Index) ->
+make_request({clear_cache, Index, Params}) ->
     IndexList = join(Index, <<",">>),
     Uri = make_uri([IndexList, ?CLEAR_CACHE], Params),
     #{method => post, uri => Uri};
 
-make_request({put_mapping, Indexes, Type, Doc})
-  when is_list(Indexes),
-       is_binary(Type),
-       (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({put_mapping, Indexes, Type, Doc}) ->
     IndexList = join(Indexes, <<",">>),
     Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
     #{method => put,
       uri => Uri,
       body => Doc};
 
-make_request({get_mapping, Indexes, Type})
-  when is_list(Indexes),
-       is_binary(Type) ->
+make_request({get_mapping, Indexes, Type}) ->
     IndexList = join(Indexes, <<",">>),
     Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
     #{method => get, uri => Uri};
 
-make_request({delete_mapping, Indexes, Type})
-  when is_list(Indexes),
-       is_binary(Type) ->
+make_request({delete_mapping, Indexes, Type}) ->
     IndexList = join(Indexes, <<",">>),
     Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
     #{method => delete, uri => Uri};
 
-make_request({aliases, Doc}) when is_binary(Doc) orelse is_list(Doc) ->
+make_request({aliases, Doc}) ->
     Uri = ?ALIASES,
     #{method => post,
       uri => Uri,
       body => Doc};
 
-make_request({insert_alias, Index, Alias})
-  when is_binary(Index),
-       is_binary(Alias) ->
+make_request({insert_alias, Index, Alias}) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #{method => put, uri => Uri};
 
-make_request({insert_alias, Index, Alias, Doc})
-  when is_binary(Index),
-       is_binary(Alias),
-       (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({insert_alias, Index, Alias, Doc}) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #{method => put, uri => Uri, body => Doc};
 
-make_request({delete_alias, Index, Alias})
-  when is_binary(Index),
-       is_binary(Alias) ->
+make_request({delete_alias, Index, Alias}) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #{method => delete, uri => Uri};
 
-make_request({is_alias, Index, Alias})
-  when is_binary(Index),
-       is_binary(Alias) ->
+make_request({is_alias, Index, Alias}) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #{method => head, uri => Uri};
 
-make_request({get_alias, Index, Alias})
-  when is_binary(Index),
-       is_binary(Alias) ->
+make_request({get_alias, Index, Alias}) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #{method => get, uri => Uri}.
 
@@ -923,7 +1004,8 @@ make_request({get_alias, Index, Alias})
 -spec route_call(destination(), tuple(), timeout()) -> response().
 % When this comes back from Poolboy, ServerRef is a pid
 %       optionally, atom for internal testing
-route_call(ServerRef, Command, Timeout) when is_atom(ServerRef); is_pid(ServerRef) ->
+route_call(ServerRef, Command, Timeout)
+  when is_atom(ServerRef); is_pid(ServerRef) ->
     gen_server:call(ServerRef, Command, Timeout);
 %% @doc Send the request to poolboy
 route_call(Destination, Command, Timeout) ->
@@ -963,39 +1045,40 @@ make_uri(BaseList, PropList) ->
 % Thanks to https://github.com/tim/erlang-oauth.git
 -spec uri_params_encode([tuple()]) -> string().
 uri_params_encode(Params) ->
-  intercalate("&", [uri_join([K, V], "=") || {K, V} <- Params]).
+    intercalate("&", [uri_join([K, V], "=") || {K, V} <- Params]).
 
 uri_join(Values, Separator) ->
-  string:join([uri_encode(Value) || Value <- Values], Separator).
+    string:join([uri_encode(Value) || Value <- Values], Separator).
 
 intercalate(Sep, Xs) ->
-  lists:concat(intersperse(Sep, Xs)).
+    lists:concat(intersperse(Sep, Xs)).
 
 intersperse(_, []) ->
-  [];
+    [];
 intersperse(_, [X]) ->
-  [X];
+    [X];
 intersperse(Sep, [X | Xs]) ->
-  [X, Sep | intersperse(Sep, Xs)].
+    [X, Sep | intersperse(Sep, Xs)].
 
 uri_encode(Term) when is_binary(Term) ->
     uri_encode(binary_to_list(Term));
 uri_encode(Term) when is_integer(Term) ->
     uri_encode(integer_to_list(Term));
 uri_encode(Term) when is_atom(Term) ->
-  uri_encode(atom_to_list(Term));
+    uri_encode(atom_to_list(Term));
 uri_encode(Term) when is_list(Term) ->
-  uri_encode(lists:reverse(Term, []), []).
+    uri_encode(lists:reverse(Term, []), []).
 
--define(is_alphanum(C), C >= $A, C =< $Z; C >= $a, C =< $z; C >= $0, C =< $9).
+-define(IS_ALPHANUM(C), C >= $A, C =< $Z; C >= $a, C =< $z; C >= $0, C =< $9).
 
-uri_encode([X | T], Acc) when ?is_alphanum(X); X =:= $-; X =:= $_; X =:= $.; X =:= $~ ->
-  uri_encode(T, [X | Acc]);
+uri_encode([X | T], Acc)
+  when ?IS_ALPHANUM(X); X =:= $-; X =:= $_; X =:= $.; X =:= $~ ->
+    uri_encode(T, [X | Acc]);
 uri_encode([X | T], Acc) ->
-  NewAcc = [$%, dec2hex(X bsr 4), dec2hex(X band 16#0f) | Acc],
-  uri_encode(T, NewAcc);
+    NewAcc = [$%, dec2hex(X bsr 4), dec2hex(X band 16#0f) | Acc],
+    uri_encode(T, NewAcc);
 uri_encode([], Acc) ->
-  Acc.
+    Acc.
 
 -compile({inline, [{dec2hex, 1}]}).
 
@@ -1006,15 +1089,20 @@ dec2hex(N) when N >= 0 andalso N =< 9 ->
 
 %% @doc Fully qualify a server ref w/ a thrift host/port
 -spec fq_server_ref(destination()) -> fq_server_ref().
-fq_server_ref({Host, Port, Name}) when is_list(Name) -> {Host, Port, list_to_binary(Name)};
-fq_server_ref({Host, Port, Name}) when is_binary(Name) -> {Host, Port, Name};
-fq_server_ref(Destination) when is_list(Destination) -> {undefined, undefined, list_to_binary(Destination)};
-fq_server_ref(Destination) when is_binary(Destination) -> {undefined, undefined, Destination}.
+fq_server_ref({Host, Port, Name}) when is_list(Name) ->
+    {Host, Port, list_to_binary(Name)};
+fq_server_ref({Host, Port, Name}) when is_binary(Name) ->
+    {Host, Port, Name};
+fq_server_ref(Destination) when is_list(Destination) ->
+    {undefined, undefined, list_to_binary(Destination)};
+fq_server_ref(Destination) when is_binary(Destination) ->
+    {undefined, undefined, Destination}.
 
 %% If thrift host is passed in, use it
 binary_host(Host) when is_list(Host) -> list_to_binary(Host);
 binary_host(undefined) -> <<"">>.
 
 %% If thrift port is passed in, use it
-binary_port(Port) when is_integer(Port) -> list_to_binary(integer_to_list(Port));
+binary_port(Port) when is_integer(Port) ->
+    list_to_binary(integer_to_list(Port));
 binary_port(undefined) -> <<"">>.
