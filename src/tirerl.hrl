@@ -10,28 +10,10 @@
 %%% retrieved from: http://www.opensource.org/licenses/bsd-license.php
 %%%-------------------------------------------------------------------
 
-%% struct restRequest
-
--record(restRequest, {method             :: atom(),
-                      uri                :: string() | binary(),
-                      parameters = #{}   :: map(),
-                      headers = #{}      :: map(),
-                      body = <<"">>      :: string() | binary()
-                     }).
-
-%% struct restResponse
-
--record(restResponse, {status :: integer(),
-                       headers :: dict:dict(),
-                       body :: undefined | string() | binary()
-                      }).
-
 -type error()           :: {error, Reason :: any()}.
 -type exception()       :: {exception, Reason :: any()}.
 -type method()          :: atom().
--type rest_response()   :: #restResponse{}.
 -type response()        :: [tuple()] | error().
--type rest_request()    :: #restRequest{}.
 -type host()            :: undefined | string().
 -type tcp_port()        :: undefined | integer().
 -type connection()      :: any().

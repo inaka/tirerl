@@ -77,6 +77,20 @@
 
 -type state() :: #state{}.
 
+-type rest_request() ::
+        #{method => atom(),
+          uri => string() | binary(),
+          parameters => map(),
+          headers =>  map(),
+          body => string() | binary()
+         }.
+
+-type rest_response() ::
+        #{status => integer(),
+          headers => map(),
+          body => undefined | string() | binary()
+         }.
+
 %% ------------------------------------------------------------------
 %% API
 %% ------------------------------------------------------------------
@@ -606,11 +620,10 @@ process_request(Connection, Request, State) ->
 do_request(Connection, Req, State) ->
 
     {ok, Client} = shotgun:open("localhost", 9200),
-    #restRequest{method = Method,
-                 headers = Headers,
-                 uri = Uri,
-                 body = Body
-                } = Req,
+
+    #{method := Method, uri := Uri} = Req,
+    Body = maps:get(body, Req, <<>>),
+    Headers = maps:get(headers, Req, #{}),
 
     Body1 = case Body of
                 Body when is_binary(Body) -> Body;
@@ -650,51 +663,53 @@ process_response({ok, #{status_code := Status, body := Body}}) ->
     end.
 
 make_request({health}) ->
-    #restRequest{method = get, uri = ?HEALTH};
+    #{method => get, uri => ?HEALTH};
+
 make_request({state, Params}) ->
     Uri = make_uri([?STATE], Params),
-    #restRequest{method = get, uri = Uri};
+    #{method => get, uri => Uri};
+
 make_request({nodes_info, NodeNames, Params})
   when is_list(NodeNames),
        is_list(Params) ->
     NodeNameList = join(NodeNames, <<",">>),
     Uri = make_uri([?NODES, NodeNameList], Params),
-    #restRequest{method = get, uri = Uri};
+    #{method => get, uri => Uri};
+
 make_request({nodes_stats, NodeNames, Params})
   when is_list(NodeNames),
        is_list(Params) ->
     NodeNameList = join(NodeNames, <<",">>),
     Uri = make_uri([?NODES, NodeNameList, ?STATS], Params),
-    #restRequest{method = get,
-                 uri = Uri};
+    #{method => get, uri => Uri};
+
 make_request({status, Index}) when is_list(Index) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?STATUS], <<"/">>),
-    #restRequest{method = get,
-                 uri = Uri};
+    #{method => get, uri => Uri};
+
 make_request({indices_stats, Index}) when is_list(Index) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?INDICES_STATS], <<"/">>),
-    #restRequest{method = get,
-                 uri = Uri};
+    #{method => get, uri => Uri};
+
 make_request({create_index, Index, Doc})
   when is_binary(Index) andalso
        (is_binary(Doc) orelse is_list(Doc)) ->
-    #restRequest{method = put,
-                 uri = Index,
-                 body = Doc};
+    #{method => put, uri => Index, body => Doc};
+
 make_request({delete_index, Index}) when is_list(Index) ->
     IndexList = join(Index, <<",">>),
-    #restRequest{method = delete,
-                 uri = IndexList};
+    #{method => delete, uri => IndexList};
+
 make_request({open_index, Index}) when is_binary(Index) ->
     Uri = join([Index, ?OPEN], <<"/">>),
-    #restRequest{method = post,
-                 uri = Uri};
+    #{method => post, uri => Uri};
+
 make_request({close_index, Index}) when is_binary(Index) ->
     Uri = join([Index, ?CLOSE], <<"/">>),
-    #restRequest{method = post,
-                 uri = Uri};
+    #{method => post, uri => Uri};
+
 make_request({count, Index, Type, Doc, Params})
   when is_list(Index) andalso
        is_list(Type) andalso
@@ -703,9 +718,8 @@ make_request({count, Index, Type, Doc, Params})
     IndexList = join(Index, <<",">>),
     TypeList = join(Type, <<",">>),
     Uri = make_uri([IndexList, TypeList, ?COUNT], Params),
-    #restRequest{method = get,
-                 uri = Uri,
-                 body = Doc};
+    #{method => get, uri => Uri, body => Doc};
+
 make_request({delete_by_query, Index, Type, Doc, Params})
   when is_list(Index) andalso
        is_list(Type) andalso
@@ -714,29 +728,29 @@ make_request({delete_by_query, Index, Type, Doc, Params})
     IndexList = join(Index, <<",">>),
     TypeList = join(Type, <<",">>),
     Uri = make_uri([IndexList, TypeList, ?QUERY], Params),
-    #restRequest{method = delete,
-                 uri = Uri,
-                 body = Doc};
+    #{method => delete, uri => Uri, body => Doc};
+
 make_request({is_index, Index}) when is_list(Index) ->
     IndexList = join(Index, <<",">>),
-    #restRequest{method = head,
-                 uri = IndexList};
+    #{method => head, uri => IndexList};
+
 make_request({is_type, Index, Type}) when is_list(Index),
                                         is_list(Type) ->
     IndexList = join(Index, <<",">>),
     TypeList = join(Type, <<",">>),
     Uri = join([IndexList, TypeList], <<"/">>),
-    #restRequest{method = head,
-                 uri = Uri};
+    #{method => head, uri => Uri};
+
 make_request({insert_doc, Index, Type, undefined, Doc, Params})
   when is_binary(Index) andalso
        is_binary(Type) andalso
        (is_binary(Doc) orelse is_list(Doc)) andalso
        is_list(Params) ->
     Uri = make_uri([Index, Type], Params),
-    #restRequest{method = post,
-                 uri = Uri,
-                 body = Doc};
+    #{method => post,
+      uri => Uri,
+      body => Doc};
+
 make_request({insert_doc, Index, Type, Id, Doc, Params})
   when is_binary(Index) andalso
        is_binary(Type) andalso
@@ -744,9 +758,10 @@ make_request({insert_doc, Index, Type, Id, Doc, Params})
        (is_binary(Doc) orelse is_list(Doc)) andalso
        is_list(Params) ->
     Uri = make_uri([Index, Type, Id], Params),
-    #restRequest{method = put,
-                 uri = Uri,
-                 body = Doc};
+    #{method => put,
+      uri => Uri,
+      body => Doc};
+
 make_request({update_doc, Index, Type, Id, Doc, Params})
   when is_binary(Index) andalso
        is_binary(Type) andalso
@@ -754,100 +769,94 @@ make_request({update_doc, Index, Type, Id, Doc, Params})
        (is_binary(Doc) orelse is_list(Doc)) andalso
        is_list(Params) ->
     Uri = make_uri([Index, Type, Id, ?UPDATE], Params),
-    #restRequest{method = post,
-                 uri = Uri,
-                 body = Doc};
+    #{method => post,
+      uri => Uri,
+      body => Doc};
+
 make_request({is_doc, Index, Type, Id})
   when is_binary(Index),
        is_binary(Type),
        is_binary(Id) ->
     Uri = make_uri([Index, Type, Id], []),
-    #restRequest{method = head,
-                 uri = Uri};
+    #{method => head, uri => Uri};
+
 make_request({get_doc, Index, Type, Id, Params})
   when is_binary(Index),
        is_binary(Type),
        is_binary(Id),
        is_list(Params) ->
     Uri = make_uri([Index, Type, Id], Params),
-    #restRequest{method = get,
-                 uri = Uri};
+    #{method => get, uri => Uri};
+
 make_request({mget_doc, Index, Type, Doc})
   when is_binary(Index) andalso
        is_binary(Type) andalso
        (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = make_uri([Index, Type, ?MGET], []),
-    #restRequest{method = get,
-                 uri = Uri,
-                 body = Doc};
+    #{method => get, uri => Uri, body => Doc};
 make_request({delete_doc, Index, Type, Id, Params})
   when is_binary(Index),
        is_binary(Type),
        is_binary(Id),
        is_list(Params) ->
     Uri = make_uri([Index, Type, Id], Params),
-    #restRequest{method = delete,
-                 uri = Uri};
+    #{method => delete, uri => Uri};
+
 make_request({search, Index, Type, Doc, Params})
   when is_binary(Index) andalso
        is_binary(Type) andalso
        (is_binary(Doc) orelse is_list(Doc)) andalso
        is_list(Params) ->
     Uri = make_uri([Index, Type, ?SEARCH], Params),
-    #restRequest{method = get,
-                 uri = Uri,
-                 body = Doc};
+    #{method => get,
+      uri => Uri,
+      body => Doc};
 make_request({bulk, <<>>, <<>>, Doc})
   when (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = make_uri([?BULK], []),
-    #restRequest{method = post,
-                 uri = Uri,
-                 body = Doc};
+    #{method => post,
+      uri => Uri,
+      body => Doc};
 make_request({bulk, Index, <<>>, Doc})
   when is_binary(Index) andalso
        (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = make_uri([Index, ?BULK], []),
-    #restRequest{method = post,
-                 uri = Uri,
-                 body = Doc};
+    #{method => post,
+      uri => Uri,
+      body => Doc};
 make_request({bulk, Index, Type, Doc})
   when is_binary(Index) andalso
        is_binary(Type) andalso
        (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = make_uri([Index, Type, ?BULK], []),
-    #restRequest{method = post,
-                 uri = Uri,
-                 body = Doc};
+    #{method => post,
+      uri => Uri,
+      body => Doc};
 
 make_request({refresh, Index}) when is_list(Index) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?REFRESH], <<"/">>),
-    #restRequest{method = post,
-                 uri = Uri};
+    #{method => post, uri => Uri};
 
 make_request({flush, Index}) when is_list(Index) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?FLUSH], <<"/">>),
-    #restRequest{method = post,
-                 uri = Uri};
+    #{method => post, uri => Uri};
 
 make_request({optimize, Index}) when is_list(Index) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?OPTIMIZE], <<"/">>),
-    #restRequest{method = post,
-                 uri = Uri};
+    #{method => post, uri => Uri};
 
 make_request({segments, Index}) when is_list(Index) ->
     IndexList = join(Index, <<",">>),
     Uri = join([IndexList, ?SEGMENTS], <<"/">>),
-    #restRequest{method = get,
-                 uri = Uri};
+    #{method => get, uri => Uri};
 
 make_request({clear_cache, Index, Params}) when is_list(Index) ->
     IndexList = join(Index, <<",">>),
     Uri = make_uri([IndexList, ?CLEAR_CACHE], Params),
-    #restRequest{method = post,
-                 uri = Uri};
+    #{method => post, uri => Uri};
 
 make_request({put_mapping, Indexes, Type, Doc})
   when is_list(Indexes),
@@ -855,68 +864,60 @@ make_request({put_mapping, Indexes, Type, Doc})
        (is_binary(Doc) orelse is_list(Doc)) ->
     IndexList = join(Indexes, <<",">>),
     Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
-    #restRequest{method = put,
-                 uri = Uri,
-                 body = Doc};
+    #{method => put,
+      uri => Uri,
+      body => Doc};
 
 make_request({get_mapping, Indexes, Type})
   when is_list(Indexes),
        is_binary(Type) ->
     IndexList = join(Indexes, <<",">>),
     Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
-    #restRequest{method = get,
-                 uri = Uri};
+    #{method => get, uri => Uri};
 
 make_request({delete_mapping, Indexes, Type})
   when is_list(Indexes),
        is_binary(Type) ->
     IndexList = join(Indexes, <<",">>),
     Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
-    #restRequest{method = delete,
-                 uri = Uri};
+    #{method => delete, uri => Uri};
 
 make_request({aliases, Doc}) when is_binary(Doc) orelse is_list(Doc) ->
     Uri = ?ALIASES,
-    #restRequest{method = post,
-                 uri = Uri,
-                 body = Doc};
+    #{method => post,
+      uri => Uri,
+      body => Doc};
 
 make_request({insert_alias, Index, Alias})
   when is_binary(Index),
        is_binary(Alias) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #restRequest{method = put,
-                 uri = Uri};
+    #{method => put, uri => Uri};
 
 make_request({insert_alias, Index, Alias, Doc})
   when is_binary(Index),
        is_binary(Alias),
        (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #restRequest{method = put,
-                 uri = Uri,
-                 body = Doc};
+    #{method => put, uri => Uri, body => Doc};
 
 make_request({delete_alias, Index, Alias})
   when is_binary(Index),
        is_binary(Alias) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #restRequest{method = delete,
-                 uri = Uri};
+    #{method => delete, uri => Uri};
 
 make_request({is_alias, Index, Alias})
   when is_binary(Index),
        is_binary(Alias) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #restRequest{method = head,
-                 uri = Uri};
+    #{method => head, uri => Uri};
 
 make_request({get_alias, Index, Alias})
   when is_binary(Index),
        is_binary(Alias) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #restRequest{method = get,
-                 uri = Uri}.
+    #{method => get, uri => Uri}.
 
 %% @doc Send the request to the gen_server
 -spec route_call(destination(), tuple(), timeout()) -> response().
