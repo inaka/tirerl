@@ -546,7 +546,6 @@ join(List, Sep) when is_list(List) ->
 %% ------------------------------------------------------------------
 
 init([PoolName, ConnOpts]) ->
-    io:format("init/1: ~p~n", [ConnOpts]),
     Connection = connection(ConnOpts),
     {ok, #state{pool_name = PoolName,
                 connection_options = ConnOpts,
@@ -605,19 +604,19 @@ process_request(Connection, Request, State) ->
                             | {error, closed, state()}
                             | {error, econnrefused, state()}.
 do_request(Connection, Req, State) ->
-    io:format("Connection: ~p~n", [Connection]),
+
     {ok, Client} = shotgun:open("localhost", 9200),
     #restRequest{method = Method,
                  headers = Headers,
                  uri = Uri,
                  body = Body
                 } = Req,
-    io:format("~p~n", [Req]),
+
     Body1 = case Body of
                 Body when is_binary(Body) -> Body;
                 _ -> jiffy:encode(Body)
             end,
-    io:format("Body: ~p~n", [Body1]),
+
     try
         Response = case Method of
                        M when M == put; M == post; M == patch ->
@@ -625,7 +624,6 @@ do_request(Connection, Req, State) ->
                        _ ->
                            shotgun:Method(Client, Uri, Headers, #{})
                    end,
-        io:format("Response: ~p~n", [Response]),
         Response1 = process_response(Response),
         {Connection, Response1}
     catch
@@ -662,8 +660,9 @@ make_request({nodes_info, NodeNames, Params})
     NodeNameList = join(NodeNames, <<",">>),
     Uri = make_uri([?NODES, NodeNameList], Params),
     #restRequest{method = get, uri = Uri};
-make_request({nodes_stats, NodeNames, Params}) when is_list(NodeNames),
-                                     is_list(Params) ->
+make_request({nodes_stats, NodeNames, Params})
+  when is_list(NodeNames),
+       is_list(Params) ->
     NodeNameList = join(NodeNames, <<",">>),
     Uri = make_uri([?NODES, NodeNameList, ?STATS], Params),
     #restRequest{method = get,
@@ -696,20 +695,22 @@ make_request({close_index, Index}) when is_binary(Index) ->
     Uri = join([Index, ?CLOSE], <<"/">>),
     #restRequest{method = post,
                  uri = Uri};
-make_request({count, Index, Type, Doc, Params}) when is_list(Index) andalso
-                                        is_list(Type) andalso
-                                        (is_binary(Doc) orelse is_list(Doc)) andalso
-                                        is_list(Params) ->
+make_request({count, Index, Type, Doc, Params})
+  when is_list(Index) andalso
+       is_list(Type) andalso
+       (is_binary(Doc) orelse is_list(Doc)) andalso
+       is_list(Params) ->
     IndexList = join(Index, <<",">>),
     TypeList = join(Type, <<",">>),
     Uri = make_uri([IndexList, TypeList, ?COUNT], Params),
     #restRequest{method = get,
                  uri = Uri,
                  body = Doc};
-make_request({delete_by_query, Index, Type, Doc, Params}) when is_list(Index) andalso
-                                        is_list(Type) andalso
-                                        (is_binary(Doc) orelse is_list(Doc)) andalso
-                                        is_list(Params) ->
+make_request({delete_by_query, Index, Type, Doc, Params})
+  when is_list(Index) andalso
+       is_list(Type) andalso
+       (is_binary(Doc) orelse is_list(Doc)) andalso
+       is_list(Params) ->
     IndexList = join(Index, <<",">>),
     TypeList = join(Type, <<",">>),
     Uri = make_uri([IndexList, TypeList, ?QUERY], Params),
@@ -756,55 +757,63 @@ make_request({update_doc, Index, Type, Id, Doc, Params})
     #restRequest{method = post,
                  uri = Uri,
                  body = Doc};
-make_request({is_doc, Index, Type, Id}) when is_binary(Index),
-                                                   is_binary(Type),
-                                                   is_binary(Id) ->
+make_request({is_doc, Index, Type, Id})
+  when is_binary(Index),
+       is_binary(Type),
+       is_binary(Id) ->
     Uri = make_uri([Index, Type, Id], []),
     #restRequest{method = head,
                  uri = Uri};
-make_request({get_doc, Index, Type, Id, Params}) when is_binary(Index),
-                                                   is_binary(Type),
-                                                   is_binary(Id),
-                                                   is_list(Params) ->
+make_request({get_doc, Index, Type, Id, Params})
+  when is_binary(Index),
+       is_binary(Type),
+       is_binary(Id),
+       is_list(Params) ->
     Uri = make_uri([Index, Type, Id], Params),
     #restRequest{method = get,
                  uri = Uri};
-make_request({mget_doc, Index, Type, Doc}) when is_binary(Index) andalso
-                                                   is_binary(Type) andalso
-                                                   (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({mget_doc, Index, Type, Doc})
+  when is_binary(Index) andalso
+       is_binary(Type) andalso
+       (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = make_uri([Index, Type, ?MGET], []),
     #restRequest{method = get,
                  uri = Uri,
                  body = Doc};
-make_request({delete_doc, Index, Type, Id, Params}) when is_binary(Index),
-                                                   is_binary(Type),
-                                                   is_binary(Id),
-                                                   is_list(Params) ->
+make_request({delete_doc, Index, Type, Id, Params})
+  when is_binary(Index),
+       is_binary(Type),
+       is_binary(Id),
+       is_list(Params) ->
     Uri = make_uri([Index, Type, Id], Params),
     #restRequest{method = delete,
                  uri = Uri};
-make_request({search, Index, Type, Doc, Params}) when is_binary(Index) andalso
-                                                   is_binary(Type) andalso
-                                                   (is_binary(Doc) orelse is_list(Doc)) andalso
-                                                   is_list(Params) ->
+make_request({search, Index, Type, Doc, Params})
+  when is_binary(Index) andalso
+       is_binary(Type) andalso
+       (is_binary(Doc) orelse is_list(Doc)) andalso
+       is_list(Params) ->
     Uri = make_uri([Index, Type, ?SEARCH], Params),
     #restRequest{method = get,
                  uri = Uri,
                  body = Doc};
-make_request({bulk, <<>>, <<>>, Doc}) when (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({bulk, <<>>, <<>>, Doc})
+  when (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = make_uri([?BULK], []),
     #restRequest{method = post,
                  uri = Uri,
                  body = Doc};
-make_request({bulk, Index, <<>>, Doc}) when is_binary(Index) andalso
-                                        (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({bulk, Index, <<>>, Doc})
+  when is_binary(Index) andalso
+       (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = make_uri([Index, ?BULK], []),
     #restRequest{method = post,
                  uri = Uri,
                  body = Doc};
-make_request({bulk, Index, Type, Doc}) when is_binary(Index) andalso
-                                         is_binary(Type) andalso
-                                         (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({bulk, Index, Type, Doc})
+  when is_binary(Index) andalso
+       is_binary(Type) andalso
+       (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = make_uri([Index, Type, ?BULK], []),
     #restRequest{method = post,
                  uri = Uri,
@@ -872,34 +881,39 @@ make_request({aliases, Doc}) when is_binary(Doc) orelse is_list(Doc) ->
                  uri = Uri,
                  body = Doc};
 
-make_request({insert_alias, Index, Alias}) when is_binary(Index),
-                                             is_binary(Alias) ->
+make_request({insert_alias, Index, Alias})
+  when is_binary(Index),
+       is_binary(Alias) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #restRequest{method = put,
                  uri = Uri};
 
-make_request({insert_alias, Index, Alias, Doc}) when is_binary(Index),
-                                                  is_binary(Alias),
-                                                  (is_binary(Doc) orelse is_list(Doc)) ->
+make_request({insert_alias, Index, Alias, Doc})
+  when is_binary(Index),
+       is_binary(Alias),
+       (is_binary(Doc) orelse is_list(Doc)) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #restRequest{method = put,
                  uri = Uri,
                  body = Doc};
 
-make_request({delete_alias, Index, Alias}) when is_binary(Index),
-                                             is_binary(Alias) ->
+make_request({delete_alias, Index, Alias})
+  when is_binary(Index),
+       is_binary(Alias) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #restRequest{method = delete,
                  uri = Uri};
 
-make_request({is_alias, Index, Alias}) when is_binary(Index),
-                                         is_binary(Alias) ->
+make_request({is_alias, Index, Alias})
+  when is_binary(Index),
+       is_binary(Alias) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #restRequest{method = head,
                  uri = Uri};
 
-make_request({get_alias, Index, Alias}) when is_binary(Index),
-                                          is_binary(Alias) ->
+make_request({get_alias, Index, Alias})
+  when is_binary(Index),
+       is_binary(Alias) ->
     Uri = join([Index, ?ALIAS, Alias], <<"/">>),
     #restRequest{method = get,
                  uri = Uri}.
@@ -917,22 +931,12 @@ route_call(Destination, Command, Timeout) ->
 -spec pool_call(fq_server_ref(), tuple(), timeout()) ->response().
 pool_call(FqServerRef, Command, Timeout) ->
     PoolId = registered_pool_name(FqServerRef),
-    TransactionFun =
-        fun() ->
-                poolboy:transaction(PoolId,
-                                    fun(Worker) ->
-                                            %% io:format("~p~n", [{Worker, Command, Timeout}])
-                                            gen_server:call(Worker, Command, Timeout)
-                                    end)
+
+    WorkerFun =
+        fun(Worker) ->
+                gen_server:call(Worker, Command, Timeout)
         end,
-    try
-        TransactionFun()
-        %% If the pool doesnt' exist, the keyspace has not been set before
-    catch
-        exit:{noproc, _} ->
-            start_pool(FqServerRef)
-            %% TransactionFun()
-    end.
+    poolboy:transaction(PoolId, WorkerFun).
 
 -spec join_list_sep([binary()], binary()) -> [any()].
 join_list_sep([Head | Tail], Sep) ->

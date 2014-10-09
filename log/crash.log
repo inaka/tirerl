@@ -1,0 +1,11 @@
+2014-10-09 18:29:26 =ERROR REPORT====
+/Users/jfacorro/work/tirerl/src/tirerl.erl:1003: Warning: function make_boolean_response/2 is unused
+/Users/jfacorro/work/tirerl/src/tirerl.erl:0: Recompiled with 1 warnings
+2014-10-09 18:36:30 =ERROR REPORT====
+/Users/jfacorro/work/tirerl/src/tirerl.erl:931: Error: function pool_call/3 undefined
+/Users/jfacorro/work/tirerl/src/tirerl.erl:933: Error: spec for undefined function tirerl:pool_call/3
+/Users/jfacorro/work/tirerl/src/tirerl.erl:940: Error: syntax error before: TransactionFun
+2014-10-09 18:39:01 =ERROR REPORT====
+/Users/jfacorro/work/tirerl/src/tirerl.erl:931: Error: function pool_call/3 undefined
+/Users/jfacorro/work/tirerl/src/tirerl.erl:933: Error: spec for undefined function tirerl:pool_call/3
+/Users/jfacorro/work/tirerl/src/tirerl.erl:943: Error: syntax error before: 'end'
