@@ -761,11 +761,10 @@ do_request(Req, State = #state{connection = Connection}) ->
                        _ ->
                            shotgun:Method(Connection, Uri, Headers, #{})
                    end,
-        Response1 = process_response(Response),
-        {Connection, Response1}
+        process_response(Response)
     catch
         error:badarg ->
-            {Connection, {error, badarg}};
+            {error, badarg};
         error:{case_clause, {error, closed}} ->
             {error, closed, State};
         error:{case_clause, {error, econnrefused}} ->
