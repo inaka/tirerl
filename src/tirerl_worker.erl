@@ -156,22 +156,22 @@ make_request({state, Params}) ->
     #{method => get, uri => Uri};
 
 make_request({nodes_info, NodeNames, Params}) ->
-    NodeNameList = join(NodeNames, <<",">>),
+    NodeNameList = join(NodeNames, <<", ">>),
     Uri = make_uri([?NODES, NodeNameList], Params),
     #{method => get, uri => Uri};
 
 make_request({nodes_stats, NodeNames, Params}) ->
-    NodeNameList = join(NodeNames, <<",">>),
+    NodeNameList = join(NodeNames, <<", ">>),
     Uri = make_uri([?NODES, NodeNameList, ?STATS], Params),
     #{method => get, uri => Uri};
 
 make_request({status, Index}) ->
-    IndexList = join(Index, <<",">>),
+    IndexList = join(Index, <<", ">>),
     Uri = join([IndexList, ?STATUS], <<"/">>),
     #{method => get, uri => Uri};
 
 make_request({indices_stats, Index}) ->
-    IndexList = join(Index, <<",">>),
+    IndexList = join(Index, <<", ">>),
     Uri = join([IndexList, ?INDICES_STATS], <<"/">>),
     #{method => get, uri => Uri};
 
@@ -179,7 +179,7 @@ make_request({create_index, Index, Doc}) ->
     #{method => put, uri => Index, body => Doc};
 
 make_request({delete_index, Index}) ->
-    IndexList = join(Index, <<",">>),
+    IndexList = join(Index, <<", ">>),
     #{method => delete, uri => IndexList};
 
 make_request({open_index, Index}) ->
@@ -191,24 +191,24 @@ make_request({close_index, Index}) ->
     #{method => post, uri => Uri};
 
 make_request({count, Index, Type, Doc, Params}) ->
-    IndexList = join(Index, <<",">>),
-    TypeList = join(Type, <<",">>),
+    IndexList = join(Index, <<", ">>),
+    TypeList = join(Type, <<", ">>),
     Uri = make_uri([IndexList, TypeList, ?COUNT], Params),
     #{method => get, uri => Uri, body => Doc};
 
 make_request({delete_by_query, Index, Type, Doc, Params}) ->
-    IndexList = join(Index, <<",">>),
-    TypeList = join(Type, <<",">>),
+    IndexList = join(Index, <<", ">>),
+    TypeList = join(Type, <<", ">>),
     Uri = make_uri([IndexList, TypeList, ?QUERY], Params),
     #{method => delete, uri => Uri, body => Doc};
 
 make_request({is_index, Index}) ->
-    IndexList = join(Index, <<",">>),
+    IndexList = join(Index, <<", ">>),
     #{method => head, uri => IndexList};
 
 make_request({is_type, Index, Type}) ->
-    IndexList = join(Index, <<",">>),
-    TypeList = join(Type, <<",">>),
+    IndexList = join(Index, <<", ">>),
+    TypeList = join(Type, <<", ">>),
     Uri = join([IndexList, TypeList], <<"/">>),
     #{method => head, uri => Uri};
 
@@ -269,44 +269,44 @@ make_request({bulk, Index, Type, Doc}) ->
       body => Doc};
 
 make_request({refresh, Index}) ->
-    IndexList = join(Index, <<",">>),
+    IndexList = join(Index, <<", ">>),
     Uri = join([IndexList, ?REFRESH], <<"/">>),
     #{method => post, uri => Uri};
 
 make_request({flush, Index}) ->
-    IndexList = join(Index, <<",">>),
+    IndexList = join(Index, <<", ">>),
     Uri = join([IndexList, ?FLUSH], <<"/">>),
     #{method => post, uri => Uri};
 
 make_request({optimize, Index}) ->
-    IndexList = join(Index, <<",">>),
+    IndexList = join(Index, <<", ">>),
     Uri = join([IndexList, ?OPTIMIZE], <<"/">>),
     #{method => post, uri => Uri};
 
 make_request({segments, Index}) ->
-    IndexList = join(Index, <<",">>),
+    IndexList = join(Index, <<", ">>),
     Uri = join([IndexList, ?SEGMENTS], <<"/">>),
     #{method => get, uri => Uri};
 
 make_request({clear_cache, Index, Params}) ->
-    IndexList = join(Index, <<",">>),
+    IndexList = join(Index, <<", ">>),
     Uri = make_uri([IndexList, ?CLEAR_CACHE], Params),
     #{method => post, uri => Uri};
 
 make_request({put_mapping, Indexes, Type, Doc}) ->
-    IndexList = join(Indexes, <<",">>),
+    IndexList = join(Indexes, <<", ">>),
     Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
     #{method => put,
       uri => Uri,
       body => Doc};
 
 make_request({get_mapping, Indexes, Type}) ->
-    IndexList = join(Indexes, <<",">>),
+    IndexList = join(Indexes, <<", ">>),
     Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
     #{method => get, uri => Uri};
 
 make_request({delete_mapping, Indexes, Type}) ->
-    IndexList = join(Indexes, <<",">>),
+    IndexList = join(Indexes, <<", ">>),
     Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
     #{method => delete, uri => Uri};
 
