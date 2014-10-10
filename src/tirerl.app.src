@@ -12,6 +12,6 @@
      worker_pool
     ]},
   {modules, []},
-  {mod, {tirerl_app, []}}
+  {mod, {tirerl, []}}
  ]
 }.

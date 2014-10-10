@@ -29,7 +29,7 @@ start_pool(Name, Opts) ->
     WPoolOptions  = [{overrun_warning, infinity},
                      {overrun_handler, {error_logger, warning_report}},
                      {workers, 50},
-                     {worker, {tirerl, {Name, Opts}}}
+                     {worker, {tirerl_worker, {Name, Opts}}}
                     ],
 
     PoolSpec = {Name,
