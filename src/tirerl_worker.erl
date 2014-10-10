@@ -16,13 +16,11 @@
          terminate/2,
          code_change/3]).
 
--record(state,
-        {connection              :: connection(),
-         connection_options = [] :: params(),
-         pool_name               :: tirerl:pool_name()
-        }).
-
--type state() :: #state{}.
+-type state() ::
+        #{connection => connection(),
+          connection_options => params(),
+          pool_name => tirerl:pool_name()
+         }.
 
 -type rest_request() ::
         #{method => atom(),
@@ -64,9 +62,9 @@ start_link(Opts) ->
 %% ------------------------------------------------------------------
 
 init({Name, ConnOpts}) ->
-    {ok, #state{pool_name = Name,
-                connection_options = ConnOpts,
-                connection = connection(ConnOpts)}}.
+    {ok, #{pool_name => Name,
+           connection_options => ConnOpts,
+           connection => connection(ConnOpts)}}.
 
 handle_call({stop}, _From, State) ->
     {stop, normal, ok, State};
@@ -87,7 +85,7 @@ handle_cast(_Request, State) ->
 handle_info(_Info, State) ->
     {stop, unhandled_info, State}.
 
-terminate(_Reason, #state{connection = Connection}) ->
+terminate(_Reason, #{connection := Connection}) ->
     shotgun:close(Connection),
     ok.
 
@@ -110,7 +108,7 @@ connection(ConnectionOptions) ->
     {connection(),  {ok, rest_response()} | error()}
     | {error, closed, state()}
     | {error, econnrefused, state()}.
-do_request(Req, State = #state{connection = Connection}) ->
+do_request(Req, State = #{connection := Connection}) ->
     #{method := Method, uri := Uri} = Req,
     Body = maps:get(body, Req, <<>>),
     Headers = maps:get(headers, Req, #{}),
