@@ -9,7 +9,7 @@
      lager,
      jiffy,
      shotgun,
-     poolboy
+     worker_pool
     ]},
   {modules, []},
   {mod, {tirerl_app, []}}

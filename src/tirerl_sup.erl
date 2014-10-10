@@ -3,12 +3,14 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/0]).
+-export([
+         start_link/0,
+         start_pool/2,
+         stop_pool/1
+        ]).
 
 %% Supervisor callbacks
 -export([init/1]).
-
--define(SERVER, ?MODULE).
 
 -type startlink_err() :: {'already_started', pid()} | 'shutdown' | term().
 -type startlink_ret() :: {'ok', pid()} | 'ignore' | {'error', startlink_err()}.
@@ -17,29 +19,29 @@
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
--spec init(Args :: term()) ->
-    {ok, {{supervisor:strategy(),
-           non_neg_integer(),
-           non_neg_integer()},
-          [supervisor:child_spec()]}}.
+-spec init(Args :: term()) -> {ok, term()}.
 init([]) ->
-    RestartStrategy = one_for_one,
-    MaxRestarts = 1000,
-    MaxSecondsBetweenRestarts = 3600,
+    {ok, {{one_for_one, 1000, 3600}, []}}.
 
-    SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
+%% Worker pool
+-spec start_pool(tirerl:pool_name(), list()) -> {ok, pid()}.
+start_pool(Name, Opts) ->
+    WPoolOptions  = [{overrun_warning, infinity},
+                     {overrun_handler, {error_logger, warning_report}},
+                     {workers, 50},
+                     {worker, {tirerl, {Name, Opts}}}
+                    ],
 
-    PoolSupSpec = {tirerl_poolboy_sup,
-                   {tirerl_poolboy_sup, start_link, []},
-                   permanent,
-                   5000,
-                   supervisor,
-                   [tirerl_poolboy_sup]
-                  },
+    PoolSpec = {Name,
+                {wpool, start_pool, [Name, WPoolOptions ++ Opts]},
+                permanent,
+                5000,
+                supervisor,
+                [wpool]
+               },
 
-    {ok,
-     {
-       SupFlags,
-       [PoolSupSpec]
-     }
-    }.
+    supervisor:start_child(?MODULE, PoolSpec).
+
+-spec stop_pool(tirerl:pool_name()) -> ok.
+stop_pool(Name) ->
+    ok = supervisor:terminate_child(?MODULE, Name).

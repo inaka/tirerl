@@ -28,21 +28,11 @@
 -type server_ref()      :: atom() | pid() | client_name().
 -type fq_server_ref()   :: {host(), tcp_port(), server_ref()}.
 -type destination()     :: server_ref() | fq_server_ref().
--type pool_name()       :: binary() | fq_server_ref().
 -type target()          :: atom() | pid().
 
 
 %% Defaults
--define(DEFAULT_HOST, "localhost").
--define(DEFAULT_PORT, 9200).
 -define(DEFAULT_POOL_NAME, <<"default_tirerl_pool">>).
--define(DEFAULT_POOL_OPTIONS, [{size, 5},
-                               {max_overflow, 10}
-                              ]).
-
--define(DEFAULT_CONNECTION_OPTIONS, [{host, ?DEFAULT_HOST},
-                                     {port, ?DEFAULT_PORT}
-                                    ]).
 -define(REGISTERED_NAME_PREFIX, "tirerl").
 -define(MAX_RECONNECT_INTERVAL, 30000).
 

@@ -9,7 +9,7 @@
 -export([stop/0, stop/1]).
 -export([start_link/1]).
 -export([stop_pool/1]).
--export([start_pool/1, start_pool/2, start_pool/3]).
+-export([start_pool/1, start_pool/2]).
 -export([registered_pool_name/1]).
 -export([join/2]).
 
@@ -75,13 +75,11 @@
          terminate/2,
          code_change/3]).
 
--record(state, {
-        binary_response = false             :: boolean(),
-        connection                          :: connection(),
-        connection_options = []             :: params(),
-        pool_name                           :: pool_name(),
-        retries_left = 1                    :: non_neg_integer(),
-        retry_interval = 0                  :: non_neg_integer()}).
+-record(state,
+        {connection              :: connection(),
+         connection_options = [] :: params(),
+         pool_name               :: pool_name()
+        }).
 
 -type state() :: #state{}.
 
@@ -99,9 +97,14 @@
           body => undefined | string() | binary()
          }.
 
-%% ------------------------------------------------------------------
-%% API
-%% ------------------------------------------------------------------
+-type pool_name() :: atom().
+
+-define(DEFAULT_HOST, "localhost").
+-define(DEFAULT_PORT, 9200).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Pool API
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @doc Start the application and all its dependencies.
 -spec start() -> ok.
@@ -123,10 +126,9 @@ stop() ->
 stop(ServerRef) ->
     gen_server:call(ServerRef, {stop}, infinity).
 
-
-%% @doc Used by Poolboy, to start 'unregistered' gen_servers
-start_link(ConnectionOptions) ->
-    gen_server:start_link(?MODULE, [?DEFAULT_POOL_NAME, ConnectionOptions], []).
+%% @doc Start a worker pool.
+start_link(Opts) ->
+    gen_server:start_link(?MODULE, [?DEFAULT_POOL_NAME, Opts], []).
 
 %% @doc Name used to register the pool server
 -spec registered_pool_name(pool_name()) -> registered_pool_name().
@@ -143,37 +145,22 @@ registered_pool_name({Host, Port, PoolName}) ->
 
 %% @doc Start a poolboy instance
 -spec start_pool(pool_name()) -> supervisor:startchild_ret().
-start_pool(PoolName) ->
-    PoolOptions = application:get_env(tirerl,
-                                      pool_options,
-                                      ?DEFAULT_POOL_OPTIONS),
-    ConnOpts = application:get_env(tirerl,
-                                   connection_options,
-                                   ?DEFAULT_CONNECTION_OPTIONS),
-    start_pool(PoolName, PoolOptions, ConnOpts).
+start_pool(Name) ->
+    start_pool(Name, []).
 
 %% @doc Start a poolboy instance
 -spec start_pool(pool_name(), params()) -> supervisor:startchild_ret().
-start_pool(PoolName, PoolOptions) when is_list(PoolOptions) ->
-    ConnOpts = application:get_env(tirerl,
-                                   connection_options,
-                                   ?DEFAULT_CONNECTION_OPTIONS),
-    start_pool(PoolName, PoolOptions, ConnOpts).
+start_pool(PoolName, Options) when is_list(Options) ->
+    tirerl_sup:start_pool(PoolName, Options).
 
-%% @doc Start a poolboy instance with appropriate Pool & Conn settings
--spec start_pool(pool_name(), params(), params()) ->
-    supervisor:startchild_ret().
-start_pool(PoolName, PoolOptions, ConnOpts)
-  when is_list(PoolOptions),
-       is_list(ConnOpts) ->
-    ServerRef = fq_server_ref(PoolName),
-    tirerl_poolboy_sup:start_pool(ServerRef, PoolOptions, ConnOpts).
-
-%% @doc Stop a poolboy instance
+%% @doc Stop a worker pool instance
 -spec stop_pool(pool_name()) -> ok | error().
-stop_pool(PoolName) ->
-    tirerlg_poolboy_sup:stop_pool(fq_server_ref(PoolName)).
-%%
+stop_pool(Name) ->
+    wpool:stop_pool(Name).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ElasticSearch API
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @doc Get the health the  ElasticSearch cluster
 -spec health(destination()) -> response().
@@ -708,20 +695,19 @@ join(List, Sep) when is_list(List) ->
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 
-init([PoolName, ConnOpts]) ->
-    Connection = connection(ConnOpts),
-    {ok, #state{pool_name = PoolName,
+init({Name, ConnOpts}) ->
+    {ok, #state{pool_name = Name,
                 connection_options = ConnOpts,
-                connection = Connection}}.
+                connection = connection(ConnOpts)}}.
 
 handle_call({stop}, _From, State) ->
     {stop, normal, ok, State};
 
-handle_call(Msg, _From, State = #state{connection = Connection}) ->
+handle_call(Msg, _From, State) ->
     try
         Request = make_request(Msg),
-        {Connection1, Response} = process_request(Connection, Request, State),
-        {reply, Response, State#state{connection = Connection1}}
+        Response = do_request(Request, State),
+        {reply, Response, State}
     catch
         error:function_clause ->
             {stop, unhandled_call, State}
@@ -733,7 +719,8 @@ handle_cast(_Request, State) ->
 handle_info(_Info, State) ->
     {stop, unhandled_info, State}.
 
-terminate(_Reason, _State) ->
+terminate(_Reason, #state{connection = Connection}) ->
+    shotgun:close(Connection),
     ok.
 
 code_change(_OldVsn, State, _Extra) ->
@@ -748,29 +735,14 @@ code_change(_OldVsn, State, _Extra) ->
 connection(ConnectionOptions) ->
     Host = proplists:get_value(host, ConnectionOptions, ?DEFAULT_HOST),
     Port = proplists:get_value(port, ConnectionOptions, ?DEFAULT_PORT),
-    #{host => Host, port => Port}.
+    {ok, Pid} = shotgun:open(Host, Port),
+    Pid.
 
-%% @doc Process the request over thrift
-%%      In case the network blipped and the thrift connection vanishes,
-%%      this will retry the request (w/ a new thrift connection)
-%%      before choking
--spec process_request(connection(), rest_request(), state()) ->
-    {connection(), response()}.
-process_request(undefined,
-                Request,
-                State = #state{connection_options = ConnOpts}) ->
-    Connection = connection(ConnOpts),
-    process_request(Connection, Request, State);
-process_request(Connection, Request, State) ->
-    do_request(Connection, Request, State).
-
--spec do_request(connection(), rest_request(), state()) ->
-                        {connection(),  {ok, rest_response()} | error()}
-                            | {error, closed, state()}
-                            | {error, econnrefused, state()}.
-do_request(Connection, Req, State) ->
-    {ok, Client} = shotgun:open("localhost", 9200),
-
+-spec do_request(rest_request(), state()) ->
+    {connection(),  {ok, rest_response()} | error()}
+    | {error, closed, state()}
+    | {error, econnrefused, state()}.
+do_request(Req, State = #state{connection = Connection}) ->
     #{method := Method, uri := Uri} = Req,
     Body = maps:get(body, Req, <<>>),
     Headers = maps:get(headers, Req, #{}),
@@ -782,10 +754,12 @@ do_request(Connection, Req, State) ->
 
     try
         Response = case Method of
-                       M when M == put; M == post; M == patch ->
-                           shotgun:Method(Client, Uri, Headers, Body1, #{});
+                       M when M == put;
+                              M == post;
+                              M == patch ->
+                           shotgun:Method(Connection, Uri, Headers, Body1, #{});
                        _ ->
-                           shotgun:Method(Client, Uri, Headers, #{})
+                           shotgun:Method(Connection, Uri, Headers, #{})
                    end,
         Response1 = process_response(Response),
         {Connection, Response1}
@@ -796,8 +770,6 @@ do_request(Connection, Req, State) ->
             {error, closed, State};
         error:{case_clause, {error, econnrefused}} ->
             {error, econnrefused, State}
-    after
-        shotgun:close(Client)
     end.
 
 -spec process_response({ok, rest_response()} | error() | exception()) ->
@@ -1004,22 +976,9 @@ make_request({get_alias, Index, Alias}) ->
 -spec route_call(destination(), tuple(), timeout()) -> response().
 % When this comes back from Poolboy, ServerRef is a pid
 %       optionally, atom for internal testing
-route_call(ServerRef, Command, Timeout)
-  when is_atom(ServerRef); is_pid(ServerRef) ->
-    gen_server:call(ServerRef, Command, Timeout);
-%% @doc Send the request to poolboy
-route_call(Destination, Command, Timeout) ->
-    pool_call(fq_server_ref(Destination), Command, Timeout).
-
--spec pool_call(fq_server_ref(), tuple(), timeout()) ->response().
-pool_call(FqServerRef, Command, Timeout) ->
-    PoolId = registered_pool_name(FqServerRef),
-
-    WorkerFun =
-        fun(Worker) ->
-                gen_server:call(Worker, Command, Timeout)
-        end,
-    poolboy:transaction(PoolId, WorkerFun).
+route_call(Name, Command, Timeout)
+  when is_atom(Name); is_pid(Name) ->
+    wpool:call(Name, Command, wpool:default_strategy(), Timeout).
 
 -spec join_list_sep([binary()], binary()) -> [any()].
 join_list_sep([Head | Tail], Sep) ->
@@ -1086,17 +1045,6 @@ dec2hex(N) when N >= 10 andalso N =< 15 ->
     N + $A - 10;
 dec2hex(N) when N >= 0 andalso N =< 9 ->
     N + $0.
-
-%% @doc Fully qualify a server ref w/ a thrift host/port
--spec fq_server_ref(destination()) -> fq_server_ref().
-fq_server_ref({Host, Port, Name}) when is_list(Name) ->
-    {Host, Port, list_to_binary(Name)};
-fq_server_ref({Host, Port, Name}) when is_binary(Name) ->
-    {Host, Port, Name};
-fq_server_ref(Destination) when is_list(Destination) ->
-    {undefined, undefined, list_to_binary(Destination)};
-fq_server_ref(Destination) when is_binary(Destination) ->
-    {undefined, undefined, Destination}.
 
 %% If thrift host is passed in, use it
 binary_host(Host) when is_list(Host) -> list_to_binary(Host);
