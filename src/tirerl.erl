@@ -72,7 +72,16 @@
 
 %% Types
 
--type pool_name() :: atom().
+-type node_name()   :: binary().
+-type index()       :: binary().
+-type type()        :: binary().
+-type id()          :: binary() | undefined.
+-type doc()         :: binary() | map().
+
+-type pool_name()   :: atom().
+-type params()      :: [tuple()].
+-type destination() :: atom() | pid().
+-type response()    :: tirerl_worker:response().
 
 -export_type([pool_name/0]).
 
@@ -114,7 +123,7 @@ start_pool(PoolName, Options) when is_list(Options) ->
     tirerl_sup:start_pool(PoolName, Options).
 
 %% @doc Stop a worker pool instance
--spec stop_pool(pool_name()) -> ok | error().
+-spec stop_pool(pool_name()) -> ok | tirerl_worker:error().
 stop_pool(Name) ->
     wpool:stop_pool(Name).
 

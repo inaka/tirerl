@@ -6,7 +6,6 @@
 
 %% API
 -export([start/1, stop/1]).
--export([start_link/1]).
 
 %% gen_server callbacks
 -export([init/1,
@@ -18,11 +17,11 @@
 
 -type state() ::
         #{connection => connection(),
-          connection_options => params(),
+          connection_options => tirerl:params(),
           pool_name => tirerl:pool_name()
          }.
 
--type rest_request() ::
+-type request() ::
         #{method => atom(),
           uri => string() | binary(),
           parameters => map(),
@@ -30,11 +29,15 @@
           body => string() | binary()
          }.
 
--type rest_response() ::
+-type response() ::
         #{status => integer(),
           headers => map(),
           body => undefined | string() | binary()
          }.
+
+-type error()           :: {error, Reason :: any()}.
+-type exception()       :: {exception, Reason :: any()}.
+-type connection()      :: pid().
 
 -define(DEFAULT_HOST, "localhost").
 -define(DEFAULT_PORT, 9200).
@@ -44,18 +47,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @doc To start up a 'simple' client
--spec start(params()) -> {ok, pid()}.
+-spec start(tirerl:params()) -> {ok, pid()}.
 start(Options) when is_list(Options) ->
-    gen_server:start(?MODULE, [Options], []).
+    gen_server:start(?MODULE, {undefined, Options}, []).
 
 %% @doc Stop this gen_server
--spec stop(server_ref()) -> ok | error().
+-spec stop(tirerl:destination()) -> ok | error().
 stop(ServerRef) ->
     gen_server:call(ServerRef, {stop}, infinity).
-
-%% @doc Start a worker pool.
-start_link(Opts) ->
-    gen_server:start_link(?MODULE, [?DEFAULT_POOL_NAME, Opts], []).
 
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
@@ -97,15 +96,15 @@ code_change(_OldVsn, State, _Extra) ->
 %% ------------------------------------------------------------------
 
 %% @doc Build a new connection
--spec connection(params()) -> connection().
+-spec connection(tirerl:params()) -> connection().
 connection(ConnectionOptions) ->
     Host = proplists:get_value(host, ConnectionOptions, ?DEFAULT_HOST),
     Port = proplists:get_value(port, ConnectionOptions, ?DEFAULT_PORT),
     {ok, Pid} = shotgun:open(Host, Port),
     Pid.
 
--spec do_request(rest_request(), state()) ->
-    {connection(),  {ok, rest_response()} | error()}
+-spec do_request(request(), state()) ->
+    {connection(),  {ok, response()} | error()}
     | {error, closed, state()}
     | {error, econnrefused, state()}.
 do_request(Req, State = #{connection := Connection}) ->
@@ -137,7 +136,7 @@ do_request(Req, State = #{connection := Connection}) ->
             {error, econnrefused, State}
     end.
 
--spec process_response({ok, rest_response()} | error() | exception()) ->
+-spec process_response({ok, response()} | error() | exception()) ->
     response().
 process_response({error, _} = Response) ->
     Response;
