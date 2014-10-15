@@ -38,6 +38,7 @@
 -type error()           :: {error, Reason :: any()}.
 -type exception()       :: {exception, Reason :: any()}.
 -type connection()      :: pid().
+-type json()            :: map().
 
 -define(DEFAULT_HOST, "localhost").
 -define(DEFAULT_PORT, 9200).
@@ -104,10 +105,8 @@ connection(ConnectionOptions) ->
     Pid.
 
 -spec do_request(request(), state()) ->
-    {connection(),  {ok, response()} | error()}
-    | {error, closed, state()}
-    | {error, econnrefused, state()}.
-do_request(Req, State = #{connection := Conn}) ->
+    {ok, json()} | {error, term()}.
+do_request(Req, #{connection := Conn}) ->
     #{method := Method, uri := Uri} = Req,
     Body = maps:get(body, Req, <<>>),
     Headers = maps:get(headers, Req, #{}),
@@ -121,24 +120,25 @@ do_request(Req, State = #{connection := Conn}) ->
         Response = shotgun:request(Conn, Method, Uri, Headers, Body1, #{}),
         process_response(Response)
     catch
-        error:badarg ->
-            {error, badarg};
-        error:{case_clause, {error, closed}} ->
-            {error, closed, State};
-        error:{case_clause, {error, econnrefused}} ->
-            {error, econnrefused, State}
+        error:Reason ->
+            {error, Reason}
     end.
 
 -spec process_response({ok, response()} | error() | exception()) ->
     response().
 process_response({error, _} = Response) ->
     Response;
-process_response({ok, #{status_code := Status, body := Body}}) ->
+process_response({ok, #{status_code := Status, body := Body} = Response}) ->
     try
-        #{status => Status,
-          body => jiffy:decode(Body, [return_maps])}
+        Json = jiffy:decode(Body, [return_maps]),
+        case Status of
+            Status when Status < 400 ->
+                {ok, Json};
+            _ ->
+                {error, Json}
+        end
     catch
-        error:badarg -> [{status, Status}, {body, Body}]
+        error:badarg -> {error, Response}
     end.
 
 make_request({health}) ->
