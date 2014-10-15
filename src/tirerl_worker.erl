@@ -121,6 +121,7 @@ do_request(Req, #{connection := Conn}) ->
         process_response(Response)
     catch
         error:Reason ->
+            io:format("~p~n", [[Method, Uri, Body1, erlang:get_stacktrace()]]),
             {error, Reason}
     end.
 
@@ -139,6 +140,13 @@ process_response({ok, #{status_code := Status, body := Body} = Response}) ->
         end
     catch
         error:badarg -> {error, Response}
+    end;
+process_response({ok, #{status_code := Status} = Response}) ->
+    case Status of
+        Status when Status < 500 ->
+            {ok, Status};
+        _ ->
+            {error, Response}
     end.
 
 make_request({health}) ->
