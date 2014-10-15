@@ -248,7 +248,8 @@ close_index(Destination, Index) when is_binary(Index) ->
 is_index(Destination, Index) when is_binary(Index) ->
     is_index(Destination, [Index]);
 is_index(Destination, Indexes) when is_list(Indexes) ->
-    route_call(Destination, {is_index, Indexes}, infinity).
+    Result = route_call(Destination, {is_index, Indexes}, infinity),
+    boolean_result(Result).
 
 %% @equiv count(Destination, ?ALL, [], Doc []).
 -spec count(destination(), doc()) -> response().
@@ -377,7 +378,8 @@ is_type(Destination, Indexes, Type) when is_list(Indexes), is_binary(Type) ->
 is_type(Destination, Index, Types) when is_binary(Index), is_list(Types) ->
     is_type(Destination, [Index], Types);
 is_type(Destination, Indexes, Types) when is_list(Indexes), is_list(Types) ->
-    route_call(Destination, {is_type, Indexes, Types}, infinity).
+    Result = route_call(Destination, {is_type, Indexes, Types}, infinity),
+    boolean_result(Result).
 
 %% @equiv insert_doc(Destination, Index, Type, Id, Doc, []).
 -spec insert_doc(destination(), index(), type(), id(), doc()) -> response().
@@ -425,7 +427,8 @@ update_doc(Destination, Index, Type, Id, Doc, Params)
 -spec is_doc(destination(), index(), type(), id()) -> response().
 is_doc(Destination, Index, Type, Id)
   when is_binary(Index), is_binary(Type), is_binary(Id) ->
-    route_call(Destination, {is_doc, Index, Type, Id}, infinity).
+    Result = route_call(Destination, {is_doc, Index, Type, Id}, infinity),
+    boolean_result(Result).
 
 %% @equiv get_doc(Destination, Index, Type, Id, []).
 -spec get_doc(destination(), index(), type(), id()) -> response().
@@ -647,7 +650,8 @@ delete_alias(Destination, Index, Alias)
 -spec is_alias(destination(), index(), index()) -> response().
 is_alias(Destination, Index, Alias)
   when is_binary(Index) andalso is_binary(Alias) ->
-    route_call(Destination, {is_alias, Index, Alias}, infinity).
+    Result = route_call(Destination, {is_alias, Index, Alias}, infinity),
+    boolean_result(Result).
 
 %% @doc Gets an alias(or more, based on the string)
 -spec get_alias(destination(), index(), index()) -> response().
@@ -666,3 +670,12 @@ get_alias(Destination, Index, Alias)
 route_call(Name, Command, Timeout)
   when is_atom(Name); is_pid(Name) ->
     wpool:call(Name, Command, wpool:default_strategy(), Timeout).
+
+
+-spec boolean_result({ok, integer()}) -> boolean().
+boolean_result({ok, Status}) when Status < 400 ->
+    true;
+boolean_result({ok, _Status}) ->
+    false;
+boolean_result(Result) ->
+    Result.
