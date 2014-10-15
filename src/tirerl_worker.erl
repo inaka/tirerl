@@ -107,7 +107,7 @@ connection(ConnectionOptions) ->
     {connection(),  {ok, response()} | error()}
     | {error, closed, state()}
     | {error, econnrefused, state()}.
-do_request(Req, State = #{connection := Connection}) ->
+do_request(Req, State = #{connection := Conn}) ->
     #{method := Method, uri := Uri} = Req,
     Body = maps:get(body, Req, <<>>),
     Headers = maps:get(headers, Req, #{}),
@@ -118,14 +118,7 @@ do_request(Req, State = #{connection := Connection}) ->
             end,
 
     try
-        Response = case Method of
-                       M when M == put;
-                              M == post;
-                              M == patch ->
-                           shotgun:Method(Connection, Uri, Headers, Body1, #{});
-                       _ ->
-                           shotgun:Method(Connection, Uri, Headers, #{})
-                   end,
+        Response = shotgun:request(Conn, Method, Uri, Headers, Body1, #{}),
         process_response(Response)
     catch
         error:badarg ->
