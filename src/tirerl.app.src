@@ -1,8 +1,8 @@
 {application, tirerl,
  [
   {description,
-   "An awesome library called tirerl"},
-  {vsn, "0.1"},
+   "Erlang interface to Elastic Search"},
+  {vsn, "0.1.2"},
   {applications,
     [kernel,
      stdlib,
