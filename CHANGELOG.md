@@ -1,12 +1,24 @@
 # Change Log
 
-## [Unreleased](https://github.com/inaka/tirerl/tree/HEAD)
+## [0.1.3](https://github.com/inaka/tirerl/tree/0.1.3) (2015-04-20)
 
-[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.1...HEAD)
+[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.2...0.1.3)
 
 **Merged pull requests:**
 
+- \[\#19\] Fix shotgun dependency issue, from 0.1.7 to 0.1.8 version [\#20](https://github.com/inaka/tirerl/pull/20) ([davecaos](https://github.com/davecaos))
+
+## [0.1.2](https://github.com/inaka/tirerl/tree/0.1.2) (2015-04-09)
+
+[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.1...0.1.2)
+
+**Merged pull requests:**
+
+- Update dependencies [\#18](https://github.com/inaka/tirerl/pull/18) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
 - Check elvis run. [\#17](https://github.com/inaka/tirerl/pull/17) ([jfacorro](https://github.com/jfacorro))
+
+- Changed rebar.conf dependencies version tags [\#16](https://github.com/inaka/tirerl/pull/16) ([GuidoRumi](https://github.com/GuidoRumi))
 
 ## [0.1.1](https://github.com/inaka/tirerl/tree/0.1.1) (2014-10-22)
 
