@@ -1,5 +1,17 @@
 # Change Log
 
+## [0.1.5](https://github.com/inaka/tirerl/tree/0.1.5) (2015-05-19)
+
+[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.4...0.1.5)
+
+**Closed issues:**
+
+- Please update shotgun [\#25](https://github.com/inaka/tirerl/issues/25)
+
+**Merged pull requests:**
+
+- \[Fix \#25\] Version Bump 0.1.5 - Shotgun updated dependency to 0.1.9 [\#26](https://github.com/inaka/tirerl/pull/26) ([davecaos](https://github.com/davecaos))
+
 ## [0.1.4](https://github.com/inaka/tirerl/tree/0.1.4) (2015-05-12)
 
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.3...0.1.4)
