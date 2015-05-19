@@ -1,6 +1,6 @@
 # Change Log
 
-## [0.1.4](https://github.com/inaka/tirerl/tree/0.1.4)
+## [0.1.4](https://github.com/inaka/tirerl/tree/0.1.4) (2015-05-12)
 
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.3...0.1.4)
 
@@ -9,6 +9,10 @@
 - Update shotgun dependency to 0.1.8 [\#19](https://github.com/inaka/tirerl/issues/19)
 
 **Merged pull requests:**
+
+- Version Bump to 0.1.4 [\#24](https://github.com/inaka/tirerl/pull/24) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
+- Rename wpool dep [\#23](https://github.com/inaka/tirerl/pull/23) ([elbrujohalcon](https://github.com/elbrujohalcon))
 
 - Update LICENSE [\#22](https://github.com/inaka/tirerl/pull/22) ([andresinaka](https://github.com/andresinaka))
 
@@ -27,6 +31,8 @@
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.1...0.1.2)
 
 **Merged pull requests:**
+
+- Update dependencies [\#18](https://github.com/inaka/tirerl/pull/18) ([elbrujohalcon](https://github.com/elbrujohalcon))
 
 - Check elvis run. [\#17](https://github.com/inaka/tirerl/pull/17) ([jfacorro](https://github.com/jfacorro))
 
