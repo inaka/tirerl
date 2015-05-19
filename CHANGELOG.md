@@ -1,5 +1,19 @@
 # Change Log
 
+## [0.1.6](https://github.com/inaka/tirerl/tree/HEAD)
+
+[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.5...HEAD)
+
+**Closed issues:**
+
+- Version Bump to 0.1.5 [\#27](https://github.com/inaka/tirerl/issues/27)
+
+**Merged pull requests:**
+
+- \[Fix \#25\] Update shotgun 0.1.10 version in makefile and rebar.config … [\#30](https://github.com/inaka/tirerl/pull/30) ([davecaos](https://github.com/davecaos))
+
+- \[Fix \#27\] Version Bump to 0.1.5 [\#28](https://github.com/inaka/tirerl/pull/28) ([davecaos](https://github.com/davecaos))
+
 ## [0.1.5](https://github.com/inaka/tirerl/tree/0.1.5) (2015-05-19)
 
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.4...0.1.5)
