@@ -1,14 +1,26 @@
 # Change Log
 
-## [0.1.6](https://github.com/inaka/tirerl/tree/HEAD)
+## [0.1.7](https://github.com/inaka/tirerl/tree/0.1.7) (2015-06-06)
 
-[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.5...HEAD)
+[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.6...0.1.7)
 
 **Closed issues:**
+
+- Update rebar.config file [\#29](https://github.com/inaka/tirerl/issues/29)
+
+## [0.1.6](https://github.com/inaka/tirerl/tree/0.1.6) (2015-05-19)
+
+[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.5...0.1.6)
+
+**Closed issues:**
+
+- Version Bump to 0.1.6 [\#31](https://github.com/inaka/tirerl/issues/31)
 
 - Version Bump to 0.1.5 [\#27](https://github.com/inaka/tirerl/issues/27)
 
 **Merged pull requests:**
+
+- \[Fix \#31\] version bump to 0.1.6 [\#32](https://github.com/inaka/tirerl/pull/32) ([davecaos](https://github.com/davecaos))
 
 - \[Fix \#25\] Update shotgun 0.1.10 version in makefile and rebar.config … [\#30](https://github.com/inaka/tirerl/pull/30) ([davecaos](https://github.com/davecaos))
 
@@ -36,10 +48,6 @@
 
 **Merged pull requests:**
 
-- Version Bump to 0.1.4 [\#24](https://github.com/inaka/tirerl/pull/24) ([elbrujohalcon](https://github.com/elbrujohalcon))
-
-- Rename wpool dep [\#23](https://github.com/inaka/tirerl/pull/23) ([elbrujohalcon](https://github.com/elbrujohalcon))
-
 - Update LICENSE [\#22](https://github.com/inaka/tirerl/pull/22) ([andresinaka](https://github.com/andresinaka))
 
 - \[\#19\] Updated change log [\#21](https://github.com/inaka/tirerl/pull/21) ([davecaos](https://github.com/davecaos))
@@ -55,14 +63,6 @@
 ## [0.1.2](https://github.com/inaka/tirerl/tree/0.1.2) (2015-04-09)
 
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.1...0.1.2)
-
-**Merged pull requests:**
-
-- Update dependencies [\#18](https://github.com/inaka/tirerl/pull/18) ([elbrujohalcon](https://github.com/elbrujohalcon))
-
-- Check elvis run. [\#17](https://github.com/inaka/tirerl/pull/17) ([jfacorro](https://github.com/jfacorro))
-
-- Changed rebar.conf dependencies version tags [\#16](https://github.com/inaka/tirerl/pull/16) ([GuidoRumi](https://github.com/GuidoRumi))
 
 ## [0.1.1](https://github.com/inaka/tirerl/tree/0.1.1) (2014-10-22)
 
