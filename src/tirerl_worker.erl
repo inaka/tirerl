@@ -1,3 +1,4 @@
+%% @hidden
 -module(tirerl_worker).
 
 -behaviour(gen_server).
