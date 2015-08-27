@@ -1,3 +1,4 @@
+%% @doc Main module with all API functions.
 -module(tirerl).
 
 -behaviour(application).
@@ -137,18 +138,18 @@ stop_pool(Name) ->
 health(Destination) ->
     route_call(Destination, {health}, infinity).
 
-%% @equiv cluster_state(Destination, []).
+%% @equiv cluster_state(Destination, [])
 -spec cluster_state(destination()) -> response().
 cluster_state(Destination) ->
     cluster_state(Destination, []).
 
 %% @doc Get the state of the  ElasticSearch cluster
 -spec cluster_state(destination(), params()) -> response().
-%% @equiv state(Destination, Params).
+%% @equiv state(Destination, Params)
 cluster_state(Destination, Params) when is_list(Params) ->
     state(Destination, Params).
 
-%% @equiv state(Destination, []).
+%% @equiv state(Destination, [])
 -spec state(destination()) -> response().
 state(Destination) ->
     state(Destination, []).
@@ -158,16 +159,16 @@ state(Destination) ->
 state(Destination, Params) when is_list(Params) ->
     route_call(Destination, {state, Params}, infinity).
 
-%% @equiv nodes_info(Destination, [], []).
+%% @equiv nodes_info(Destination, [], [])
 -spec nodes_info(destination()) -> response().
 nodes_info(Destination) ->
     nodes_info(Destination, [], []).
 
-%% @equiv nodes_info(Destination, [NodeName], []).
+%% @equiv nodes_info(Destination, [NodeName], [])
 -spec nodes_info(destination(), node_name()) -> response().
 nodes_info(Destination, NodeName) when is_binary(NodeName) ->
     nodes_info(Destination, [NodeName], []);
-%% @equiv nodes_info(Destination, NodeNames, []).
+%% @equiv nodes_info(Destination, NodeNames, [])
 nodes_info(Destination, NodeNames) when is_list(NodeNames) ->
     nodes_info(Destination, NodeNames, []).
 
@@ -177,16 +178,16 @@ nodes_info(Destination, NodeNames, Params)
   when is_list(NodeNames), is_list(Params) ->
     route_call(Destination, {nodes_info, NodeNames, Params}, infinity).
 
-%% @equiv nodes_stats(Destination, [], []).
+%% @equiv nodes_stats(Destination, [], [])
 -spec nodes_stats(destination()) -> response().
 nodes_stats(Destination) ->
     nodes_stats(Destination, [], []).
 
-%% @equiv nodes_stats(Destination, [NodeName], []).
+%% @equiv nodes_stats(Destination, [NodeName], [])
 -spec nodes_stats(destination(), node_name()) -> response().
 nodes_stats(Destination, NodeName) when is_binary(NodeName) ->
     nodes_stats(Destination, [NodeName], []);
-%% @equiv nodes_stats(Destination, NodeNames, []).
+%% @equiv nodes_stats(Destination, NodeNames, [])
 nodes_stats(Destination, NodeNames) when is_list(NodeNames) ->
     nodes_stats(Destination, NodeNames, []).
 
@@ -251,19 +252,19 @@ is_index(Destination, Indexes) when is_list(Indexes) ->
     Result = route_call(Destination, {is_index, Indexes}, infinity),
     boolean_result(Result).
 
-%% @equiv count(Destination, ?ALL, [], Doc []).
+%% @equiv count(Destination, <<"_all">>, [], Doc, [])
 -spec count(destination(), doc()) -> response().
 count(Destination, Doc) when (is_binary(Doc) orelse is_map(Doc)) ->
     count(Destination, ?ALL, [], Doc, []).
 
-%% @equiv count(Destination, ?ALL, [], Doc, Params).
+%% @equiv count(Destination, <<"_all">>, [], Doc, Params)
 -spec count(destination(), doc(), params()) -> response().
 count(Destination, Doc, Params)
   when (is_binary(Doc) orelse is_map(Doc))
        andalso is_list(Params) ->
     count(Destination, ?ALL, [], Doc, Params).
 
-%% @equiv count(Destination, Index, [], Doc, Params).
+%% @equiv count(Destination, Index, [], Doc, Params)
 -spec count(destination(), index() | [index()], doc(), params()) -> response().
 count(Destination, Index, Doc, Params)
   when is_binary(Index)
@@ -307,19 +308,19 @@ count(Destination, Indexes, Types, Doc, Params)
        andalso is_list(Params) ->
     route_call(Destination, {count, Indexes, Types, Doc, Params}, infinity).
 
-%% @equiv delete_by_query(Destination, ?ALL, [], Doc []).
+%% @equiv delete_by_query(Destination, <<"_all">>, [], Doc, [])
 -spec delete_by_query(destination(), doc()) -> response().
 delete_by_query(Destination, Doc) when (is_binary(Doc) orelse is_map(Doc)) ->
     delete_by_query(Destination, ?ALL, [], Doc, []).
 
-%% @equiv delete_by_query(Destination, ?ALL, [], Doc, Params).
+%% @equiv delete_by_query(Destination, <<"_all">>, [], Doc, Params)
 -spec delete_by_query(destination(), doc(), params()) -> response().
 delete_by_query(Destination, Doc, Params)
   when (is_binary(Doc) orelse is_map(Doc)),
        is_list(Params) ->
     delete_by_query(Destination, ?ALL, [], Doc, Params).
 
-%% @equiv delete_by_query(Destination, Index, [], Doc, Params).
+%% @equiv delete_by_query(Destination, Index, [], Doc, Params)
 -spec delete_by_query(destination(),
                       index() | [index()],
                       doc(),
@@ -381,7 +382,7 @@ is_type(Destination, Indexes, Types) when is_list(Indexes), is_list(Types) ->
     Result = route_call(Destination, {is_type, Indexes, Types}, infinity),
     boolean_result(Result).
 
-%% @equiv insert_doc(Destination, Index, Type, Id, Doc, []).
+%% @equiv insert_doc(Destination, Index, Type, Id, Doc, [])
 -spec insert_doc(destination(), index(), type(), id(), doc()) -> response().
 insert_doc(Destination, Index, Type, Id, Doc)
   when is_binary(Index)
@@ -401,7 +402,7 @@ insert_doc(Destination, Index, Type, Id, Doc, Params)
                {insert_doc, Index, Type, Id, Doc, Params},
                infinity).
 
-%% @equiv update_doc(Destination, Index, Type, Id, Doc, []).
+%% @equiv update_doc(Destination, Index, Type, Id, Doc, [])
 -spec update_doc(destination(), index(), type(), id(), doc()) -> response().
 update_doc(Destination, Index, Type, Id, Doc)
   when is_binary(Index)
@@ -430,7 +431,7 @@ is_doc(Destination, Index, Type, Id)
     Result = route_call(Destination, {is_doc, Index, Type, Id}, infinity),
     boolean_result(Result).
 
-%% @equiv get_doc(Destination, Index, Type, Id, []).
+%% @equiv get_doc(Destination, Index, Type, Id, [])
 -spec get_doc(destination(), index(), type(), id()) -> response().
 get_doc(Destination, Index, Type, Id)
   when is_binary(Index), is_binary(Type) ->
@@ -465,7 +466,7 @@ mget_doc(Destination, Index, Type, Doc)
        andalso (is_binary(Doc) orelse is_map(Doc))->
     route_call(Destination, {mget_doc, Index, Type, Doc}, infinity).
 
-%% @equiv delete_doc(Destination, Index, Type, Id, []).
+%% @equiv delete_doc(Destination, Index, Type, Id, [])
 -spec delete_doc(destination(), index(), type(), id()) -> response().
 delete_doc(Destination, Index, Type, Id)
   when is_binary(Index), is_binary(Type) ->
@@ -476,7 +477,7 @@ delete_doc(Destination, Index, Type, Id, Params)
   when is_binary(Index), is_binary(Type), is_binary(Id), is_list(Params)->
     route_call(Destination, {delete_doc, Index, Type, Id, Params}, infinity).
 
-%% @equiv search(Destination, Index, Type, Doc, []).
+%% @equiv search(Destination, Index, Type, Doc, [])
 -spec search(destination(), index(), type(), doc()) -> response().
 search(Destination, Index, Type, Doc)
   when is_binary(Index)
@@ -514,7 +515,7 @@ bulk(Destination, Index, Type, Doc)
        andalso (is_binary(Doc) orelse is_map(Doc)) ->
     route_call(Destination, {bulk, Index, Type, Doc}, infinity).
 
-%% @equiv refresh(Destination, ?ALL).
+%% @equiv refresh(Destination, <<"_all">>)
 %% @doc Refresh all indices
 %-spec refresh(destination()) -> response().
 refresh(Destination) ->
@@ -528,7 +529,7 @@ refresh(Destination, Indexes) when is_list(Indexes) ->
     route_call(Destination, {refresh, Indexes}, infinity).
 
 %% @doc Flush all indices
-%% @equiv flush(Destination, ?ALL).
+%% @equiv flush(Destination, <<"_all">>)
 -spec flush(destination()) -> response().
 flush(Destination) ->
     flush(Destination, ?ALL).
@@ -540,7 +541,7 @@ flush(Destination, Index) when is_binary(Index) ->
 flush(Destination, Indexes) when is_list(Indexes) ->
     route_call(Destination, {flush, Indexes}, infinity).
 
-%% @equiv optimize(Destination, ?ALL).
+%% @equiv optimize(Destination,  <<"_all">>)
 %% @doc Optimize all indices
 -spec optimize(destination()) -> response().
 optimize(Destination) ->
@@ -553,7 +554,7 @@ optimize(Destination, Index) when is_binary(Index) ->
 optimize(Destination, Indexes) when is_list(Indexes) ->
     route_call(Destination, {optimize, Indexes}, infinity).
 
-%% @equiv segments(Destination, ?ALL).
+%% @equiv segments(Destination,  <<"_all">>)
 %% @doc Optimize all indices
 -spec segments(destination()) -> response().
 segments(Destination) ->
@@ -566,20 +567,20 @@ segments(Destination, Index) when is_binary(Index) ->
 segments(Destination, Indexes) when is_list(Indexes) ->
     route_call(Destination, {segments, Indexes}, infinity).
 
-%% @equiv clear_cache(Destination, ?ALL, []).
+%% @equiv clear_cache(Destination, <<"_all">>, [])
 %% @doc Clear all the caches
 -spec clear_cache(destination()) -> response().
 clear_cache(Destination) ->
     clear_cache(Destination, ?ALL, []).
 
-%% @equiv clear_cache(Destination, Indexes, []).
+%% @equiv clear_cache(Destination, Indexes, [])
 -spec clear_cache(destination(), index() | [index()]) -> response().
 clear_cache(Destination, Index) when is_binary(Index) ->
     clear_cache(Destination, [Index], []);
 clear_cache(Destination, Indexes) when is_list(Indexes) ->
     clear_cache(Destination, Indexes, []).
 
-%% @equiv clear_cache(Destination, Indexes, []).
+%% @equiv clear_cache(Destination, Indexes, [])
 -spec clear_cache(destination(), index() | [index()], params()) -> response().
 clear_cache(Destination, Index, Params)
   when is_binary(Index), is_list(Params) ->
