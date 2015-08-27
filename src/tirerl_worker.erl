@@ -117,8 +117,14 @@ do_request(Req, #{connection := Conn}) ->
                 _ -> jiffy:encode(Body)
             end,
 
+    FullUri =
+        case Uri of
+            [$/ | _] -> Uri;
+            Uri -> [$/ | Uri]
+        end,
+
     try
-        Response = shotgun:request(Conn, Method, Uri, Headers, Body1, #{}),
+        Response = shotgun:request(Conn, Method, FullUri, Headers, Body1, #{}),
         process_response(Response)
     catch
         error:Reason ->
