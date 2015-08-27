@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>tirerl (tirerl) -  (Erlang Documentation)</title>
+    <link href="../erldocs.css" type="text/css" rel="stylesheet"/>
+    <link href="/search.xml" rel="search" type="application/opensearchdescription+xml" title="erldocs"/>
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-44246018-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+
+  <body>
+    <div id="sidebar" class="inactive">
+      <input type="text" id="search" autocomplete="off" placeholder="press TAB to search"/>
+      <ul id="results"> </ul>
+    </div>
+
+    <div id="content">
+      <div style="margin:0px; padding:10px 20px;">
+        
+
+<h1>tirerl</h1>
+<h2 class="modsummary">Main module with all API functions.</h2>
+<div class="description">
+<p>Main module with all API functions.</p></div>
+<div id="types" class="category"><h4><a href="#types">Types</a></h4><hr />
+    <div class="type"><h3 id="type-destination">destination() = atom() | pid()</h3></div>
+    <div class="type"><h3 id="type-doc">doc() = binary() | #{}</h3></div>
+    <div class="type"><h3 id="type-id">id() = binary() | undefined</h3></div>
+    <div class="type"><h3 id="type-index">index() = binary()</h3></div>
+    <div class="type"><h3 id="type-node_name">node_name() = binary()</h3></div>
+    <div class="type"><h3 id="type-params">params() = [tuple()]</h3></div>
+    <div class="type"><h3 id="type-pool_name">pool_name() = atom()</h3></div>
+    <div class="type"><h3 id="type-response">response() = <a href="tirerl_worker.html#type-response" class="seealso">tirerl_worker:response()</a></h3></div>
+    <div class="type"><h3 id="type-type">type() = binary()</h3></div></div>
+<div id="functions" class="category"><h4><a href="#functions">Functions</a></h4><hr />
+<div class="function">
+<h3 id="start/0">start() -&gt; ok</h3>
+
+
+<div class="description">
+
+<p>Start the application and all its dependencies.</p>
+</div></div>
+<div class="function">
+<h3 id="stop/0">stop() -&gt; ok</h3>
+
+
+<div class="description">
+
+<p>Stop the application and all its dependencies.</p>
+</div></div>
+<div class="function">
+<h3 id="start/2">start(StartType::normal | {takeover, node()} | {failover, node()}, StartArgs::[term()]) -&gt; {ok, pid()}</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="stop/1">stop(State) -&gt; term()
+</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="start_pool/1">start_pool(Name::pool_name()) -&gt; startchild_ret() (see module supervisor)</h3>
+
+
+<div class="description">
+
+<p>Start a poolboy instance</p>
+</div></div>
+<div class="function">
+<h3 id="start_pool/1-1">start_pool(PoolName::pool_name(), Options::params()) -&gt; startchild_ret() (see module supervisor)</h3>
+
+
+<div class="description">
+
+<p>Start a poolboy instance</p>
+</div></div>
+<div class="function">
+<h3 id="stop_pool/1">stop_pool(Name::pool_name()) -&gt; ok | error() (see module tirerl_worker)</h3>
+
+
+<div class="description">
+
+<p>Stop a worker pool instance</p>
+</div></div>
+<div class="function">
+<h3 id="health/1">health(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get the health the  ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="cluster_state/1">cluster_state(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#cluster_state/2" class="seealso">cluster_state(Destination, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="cluster_state/1-1">cluster_state(Destination::destination(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get the state of the  ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="state/1">state(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#state/2" class="seealso">state(Destination, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="state/1-1">state(Destination::destination(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get the state of the  ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="nodes_info/1">nodes_info(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#nodes_info/3" class="seealso">nodes_info(Destination, [], [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="nodes_info/1-1">nodes_info(Destination::destination(), NodeName::node_name()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#nodes_info/3" class="seealso">nodes_info(Destination, [NodeName], [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="nodes_info/1-2">nodes_info(Destination::destination(), NodeNames::[node_name()], Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get the nodes_info of the  ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="nodes_stats/1">nodes_stats(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#nodes_stats/3" class="seealso">nodes_stats(Destination, [], [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="nodes_stats/1-1">nodes_stats(Destination::destination(), NodeName::node_name()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#nodes_stats/3" class="seealso">nodes_stats(Destination, [NodeName], [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="nodes_stats/1-2">nodes_stats(Destination::destination(), NodeNames::[node_name()], Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get the nodes_stats of the  ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="status/1">status(Destination::destination(), Index::index() | [index()]) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get the status of an index/indices in the  ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="indices_stats/1">indices_stats(Destination::destination(), Index::index() | [index()]) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get the stats of an index/indices in the  ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="create_index/1">create_index(Destination::destination(), Index::index()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#create_index/3" class="seealso">create_index(Destination, Index, &lt;&lt;&gt;&gt;)</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="create_index/1-1">create_index(Destination::destination(), Index::index(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Create an index in the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="delete_index/1">delete_index(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Delete all the indices in the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="delete_index/1-1">delete_index(Destination::destination(), Index::index() | [index()]) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Delete an index(es) in the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="open_index/1">open_index(Destination::destination(), Index::index()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Open an index in the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="close_index/1">close_index(Destination::destination(), Index::index()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Close an index in the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="is_index/1">is_index(Destination::destination(), Index::index() | [index()]) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Check if an index/indices exists in the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="count/1">count(Destination::destination(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#count/5" class="seealso">count(Destination, &lt;&lt;"_all"&gt;&gt;, [], Doc, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="count/1-1">count(Destination::destination(), Doc::doc(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#count/5" class="seealso">count(Destination, &lt;&lt;"_all"&gt;&gt;, [], Doc, Params)</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="count/1-2">count(Destination::destination(), Index::index() | [index()], Doc::doc(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#count/5" class="seealso">count(Destination, Index, [], Doc, Params)</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="count/1-3">count(Destination::destination(), Index::index() | [index()], Type::type() | [type()], Doc::doc(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get the number of matches for a query</p>
+</div></div>
+<div class="function">
+<h3 id="delete_by_query/1">delete_by_query(Destination::destination(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#delete_by_query/5" class="seealso">delete_by_query(Destination, &lt;&lt;"_all"&gt;&gt;, [], Doc, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="delete_by_query/1-1">delete_by_query(Destination::destination(), Doc::doc(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#delete_by_query/5" class="seealso">delete_by_query(Destination, &lt;&lt;"_all"&gt;&gt;, [], Doc,
+		Params)</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="delete_by_query/1-2">delete_by_query(Destination::destination(), Index::index() | [index()], Doc::doc(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#delete_by_query/5" class="seealso">delete_by_query(Destination, Index, [], Doc, Params)</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="delete_by_query/1-3">delete_by_query(Destination::destination(), Index::index() | [index()], Type::type() | [type()], Doc::doc(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get the number of matches for a query</p>
+</div></div>
+<div class="function">
+<h3 id="is_type/1">is_type(Destination::destination(), Index::index() | [index()], Type::type() | [type()]) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Check if a type exists in an index/indices in the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="insert_doc/1">insert_doc(Destination::destination(), Index::index(), Type::type(), Id::id(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#insert_doc/6" class="seealso">insert_doc(Destination, Index, Type, Id, Doc, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="insert_doc/1-1">insert_doc(Destination::destination(), Index::index(), Type::type(), Id::id(), Doc::doc(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Insert a doc into the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="update_doc/1">update_doc(Destination::destination(), Index::index(), Type::type(), Id::id(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#update_doc/6" class="seealso">update_doc(Destination, Index, Type, Id, Doc, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="update_doc/1-1">update_doc(Destination::destination(), Index::index(), Type::type(), Id::id(), Doc::doc(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Insert a doc into the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="is_doc/1">is_doc(Destination::destination(), Index::index(), Type::type(), Id::id()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Checks to see if the doc exists</p>
+</div></div>
+<div class="function">
+<h3 id="get_doc/1">get_doc(Destination::destination(), Index::index(), Type::type(), Id::id()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#get_doc/5" class="seealso">get_doc(Destination, Index, Type, Id, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="get_doc/1-1">get_doc(Destination::destination(), Index::index(), Type::type(), Id::id(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get a doc from the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="mget_doc/1">mget_doc(Destination::destination(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#mget_doc/4" class="seealso">mget_doc(Destination, &lt;&lt;&gt;&gt;, &lt;&lt;&gt;&gt;, Doc)</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="mget_doc/1-1">mget_doc(Destination::destination(), Index::index(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#mget_doc/4" class="seealso">mget_doc(Destination, Index, &lt;&lt;&gt;&gt;, Doc)</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="mget_doc/1-2">mget_doc(Destination::destination(), Index::index(), Type::type(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get a doc from the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="delete_doc/1">delete_doc(Destination::destination(), Index::index(), Type::type(), Id::id()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#delete_doc/5" class="seealso">delete_doc(Destination, Index, Type, Id, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="delete_doc/1-1">delete_doc(Destination::destination(), Index::index(), Type::type(), Id::id(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Delete a doc from the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="search/1">search(Destination::destination(), Index::index(), Type::type(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#search/5" class="seealso">search(Destination, Index, Type, Doc, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="search/1-1">search(Destination::destination(), Index::index(), Type::type(), Doc::doc(), Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Search for docs in the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="bulk/1">bulk(Destination::destination(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Perform bulk operations on the ElasticSearch cluster</p>
+</div></div>
+<div class="function">
+<h3 id="bulk/1-1">bulk(Destination::destination(), Index::index(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Perform bulk operations on the ElasticSearch cluster
+  with a default index</p>
+</div></div>
+<div class="function">
+<h3 id="bulk/1-2">bulk(Destination::destination(), Index::index(), Type::type(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Perform bulk operations on the ElasticSearch cluster
+  with a default index and a default type</p>
+</div></div>
+<div class="function">
+<h3 id="refresh/1">refresh(Destination) -&gt; term()
+</h3>
+
+
+<div class="description">
+
+<p>Refresh all indices
+-spec refresh(destination()) -&gt; response().</p>
+</div></div>
+<div class="function">
+<h3 id="refresh/2">refresh(Destination, Index) -&gt; term()
+</h3>
+
+
+<div class="description">
+
+<p>Refresh one or more indices
+-spec refresh(destination(), index() | [index()]) -&gt; response().</p>
+</div></div>
+<div class="function">
+<h3 id="flush/1">flush(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Flush all indices</p>
+</div></div>
+<div class="function">
+<h3 id="flush/1-1">flush(Destination::destination(), Index::index() | [index()]) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Flush one or more indices</p>
+</div></div>
+<div class="function">
+<h3 id="optimize/1">optimize(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Optimize all indices</p>
+</div></div>
+<div class="function">
+<h3 id="optimize/1-1">optimize(Destination::destination(), Index::index() | [index()]) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Optimize one or more indices</p>
+</div></div>
+<div class="function">
+<h3 id="segments/1">segments(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Optimize all indices</p>
+</div></div>
+<div class="function">
+<h3 id="segments/1-1">segments(Destination::destination(), Index::index() | [index()]) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Optimize one or more indices</p>
+</div></div>
+<div class="function">
+<h3 id="clear_cache/1">clear_cache(Destination::destination()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Clear all the caches</p>
+</div></div>
+<div class="function">
+<h3 id="clear_cache/1-1">clear_cache(Destination::destination(), Index::index() | [index()]) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#clear_cache/3" class="seealso">clear_cache(Destination, Indexes, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="clear_cache/1-2">clear_cache(Destination::destination(), Index::index() | [index()], Params::params()) -&gt; response()</h3>
+
+
+<div class="description">
+<p>Equivalent to <a href="#clear_cache/3" class="seealso">clear_cache(Destination, Indexes, [])</a>.</p>
+</div></div>
+<div class="function">
+<h3 id="put_mapping/1">put_mapping(Destination::destination(), Index::index() | [index()], Type::type(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Insert a mapping into an ElasticSearch index</p>
+</div></div>
+<div class="function">
+<h3 id="get_mapping/1">get_mapping(Destination::destination(), Index::index() | [index()], Type::type()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Get a mapping from an ElasticSearch index</p>
+</div></div>
+<div class="function">
+<h3 id="delete_mapping/1">delete_mapping(Destination::destination(), Index::index() | [index()], Type::type()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Delete a mapping from an ElasticSearch index</p>
+</div></div>
+<div class="function">
+<h3 id="aliases/1">aliases(Destination::destination(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Operate on aliases (as compared to 'alias')</p>
+</div></div>
+<div class="function">
+<h3 id="insert_alias/1">insert_alias(Destination::destination(), Index::index(), Alias::index()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Insert an alias (as compared to 'aliases')</p>
+</div></div>
+<div class="function">
+<h3 id="insert_alias/1-1">insert_alias(Destination::destination(), Index::index(), Alias::index(), Doc::doc()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Insert an alias with options(as compared to 'aliases')</p>
+</div></div>
+<div class="function">
+<h3 id="delete_alias/1">delete_alias(Destination::destination(), Index::index(), Alias::index()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Delete an alias (as compared to 'aliases')</p>
+</div></div>
+<div class="function">
+<h3 id="is_alias/1">is_alias(Destination::destination(), Index::index(), Alias::index()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Checks if an alias exists (Alias can be a string with a wildcard)</p>
+</div></div>
+<div class="function">
+<h3 id="get_alias/1">get_alias(Destination::destination(), Index::index(), Alias::index()) -&gt; response()</h3>
+
+
+<div class="description">
+
+<p>Gets an alias(or more, based on the string)</p>
+</div></div></div>
+
+<authors>
+<aname> </aname>
+<email> </email></authors>
+      </div>
+  </div>
+
+    <script type="text/javascript">
+      var CURRENT_ROOT = "../";
+    </script>
+
+    <script type="text/javascript" src="../jquery.js"></script>
+    <script type="text/javascript" src="../erldocs_index.js"></script>
+    <script type="text/javascript" src="../erldocs.js"></script>
+  </body>
+</html>
