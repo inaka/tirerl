@@ -2,7 +2,7 @@
  [
   {description,
    "Erlang interface to Elastic Search"},
-  {vsn, "0.1.7"},
+  {vsn, "0.1.8"},
   {applications,
     [kernel,
      stdlib,
@@ -11,6 +11,11 @@
      worker_pool
     ]},
   {modules, []},
-  {mod, {tirerl, []}}
+  {registered, []},
+  {mod, {tirerl, []}},
+  {maintainers,["Inaka"]},
+  {licenses,["Apache 2.0"]},
+  {links,[{"Github","https://github.com/inaka/tirerl"}]},
+  {build_tools,["make", "rebar"]}
  ]
 }.

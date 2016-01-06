@@ -84,14 +84,14 @@
 -type destination() :: atom() | pid().
 -type response()    :: tirerl_worker:response().
 
--export_type([pool_name/0]).
+-export_type([pool_name/0, destination/0, params/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Application Behavior
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @doc Start the application and all its dependencies.
--spec start() -> ok.
+-spec start() -> {ok, [atom()]}.
 start() ->
     application:ensure_all_started(tirerl).
 
@@ -106,6 +106,7 @@ stop() ->
 start(_StartType, _StartArgs) ->
     tirerl_sup:start_link().
 
+-spec stop([]) -> ok.
 stop(_State) ->
     ok.
 
@@ -245,7 +246,7 @@ close_index(Destination, Index) when is_binary(Index) ->
     route_call(Destination, {close_index, Index}, infinity).
 
 %% @doc Check if an index/indices exists in the ElasticSearch cluster
--spec is_index(destination(), index() | [index()]) -> response().
+-spec is_index(destination(), index() | [index()]) -> boolean().
 is_index(Destination, Index) when is_binary(Index) ->
     is_index(Destination, [Index]);
 is_index(Destination, Indexes) when is_list(Indexes) ->
@@ -371,7 +372,7 @@ delete_by_query(Destination, Indexes, Types, Doc, Params)
 
 %% @doc Check if a type exists in an index/indices in the ElasticSearch cluster
 -spec is_type(destination(), index() | [index()], type() | [type()]) ->
-    response().
+    boolean().
 is_type(Destination, Index, Type) when is_binary(Index), is_binary(Type) ->
     is_type(Destination, [Index], [Type]);
 is_type(Destination, Indexes, Type) when is_list(Indexes), is_binary(Type) ->
@@ -425,7 +426,7 @@ update_doc(Destination, Index, Type, Id, Doc, Params)
                infinity).
 
 %% @doc Checks to see if the doc exists
--spec is_doc(destination(), index(), type(), id()) -> response().
+-spec is_doc(destination(), index(), type(), id()) -> boolean().
 is_doc(Destination, Index, Type, Id)
   when is_binary(Index), is_binary(Type), is_binary(Id) ->
     Result = route_call(Destination, {is_doc, Index, Type, Id}, infinity),
@@ -517,12 +518,12 @@ bulk(Destination, Index, Type, Doc)
 
 %% @equiv refresh(Destination, <<"_all">>)
 %% @doc Refresh all indices
-%-spec refresh(destination()) -> response().
+-spec refresh(destination()) -> response().
 refresh(Destination) ->
     refresh(Destination, ?ALL).
 
 %% @doc Refresh one or more indices
-%-spec refresh(destination(), index() | [index()]) -> response().
+-spec refresh(destination(), index() | [index()]) -> response().
 refresh(Destination, Index) when is_binary(Index) ->
     refresh(Destination, [Index]);
 refresh(Destination, Indexes) when is_list(Indexes) ->
@@ -648,7 +649,7 @@ delete_alias(Destination, Index, Alias)
     route_call(Destination, {delete_alias, Index, Alias}, infinity).
 
 %% @doc Checks if an alias exists (Alias can be a string with a wildcard)
--spec is_alias(destination(), index(), index()) -> response().
+-spec is_alias(destination(), index(), index()) -> boolean().
 is_alias(Destination, Index, Alias)
   when is_binary(Index) andalso is_binary(Alias) ->
     Result = route_call(Destination, {is_alias, Index, Alias}, infinity),
@@ -666,14 +667,12 @@ get_alias(Destination, Index, Alias)
 
 %% @doc Send the request to the gen_server
 -spec route_call(destination(), tuple(), timeout()) -> response().
-% When this comes back from Poolboy, ServerRef is a pid
-%       optionally, atom for internal testing
 route_call(Name, Command, Timeout)
   when is_atom(Name); is_pid(Name) ->
     wpool:call(Name, Command, wpool:default_strategy(), Timeout).
 
 
--spec boolean_result({ok, integer()}) -> boolean().
+-spec boolean_result({ok, pos_integer()}) -> boolean().
 boolean_result({ok, Status}) when Status < 400 ->
     true;
 boolean_result({ok, _Status}) ->

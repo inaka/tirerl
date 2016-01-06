@@ -18,10 +18,10 @@
 
 -spec start_link() -> startlink_ret().
 start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+    supervisor:start_link({local, ?MODULE}, ?MODULE, noargs).
 
--spec init(Args :: term()) -> {ok, term()}.
-init([]) ->
+-spec init(noargs) -> {ok, {{one_for_one, 1000, 3600}, []}}.
+init(noargs) ->
     {ok, {{one_for_one, 1000, 3600}, []}}.
 
 %% Worker pool
