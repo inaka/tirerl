@@ -30,16 +30,19 @@
           body => string() | binary()
          }.
 
--type response() ::
+-type response() :: error() | {ok, map() | pos_integer()}.
+
+-type internal_response() ::
         #{status => integer(),
           headers => map(),
           body => undefined | string() | binary()
          }.
 
--type error()           :: {error, Reason :: any()}.
--type exception()       :: {exception, Reason :: any()}.
--type connection()      :: pid().
--type json()            :: map().
+-type error()      :: {error, Reason :: any()}.
+-type connection() :: pid().
+-type json()       :: map().
+
+-export_type([error/0, response/0]).
 
 -define(DEFAULT_HOST, "localhost").
 -define(DEFAULT_PORT, 9200).
@@ -51,7 +54,7 @@
 %% @doc To start up a 'simple' client
 -spec start(tirerl:params()) -> {ok, pid()}.
 start(Options) when is_list(Options) ->
-    gen_server:start(?MODULE, {undefined, Options}, []).
+    gen_server:start(?MODULE, Options, []).
 
 %% @doc Stop this gen_server
 -spec stop(tirerl:destination()) -> ok | error().
@@ -61,15 +64,18 @@ stop(ServerRef) ->
 %% ------------------------------------------------------------------
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
-
-init({Name, ConnOpts}) ->
-    {ok, #{pool_name => Name,
+-spec init(tirerl:params()) -> {ok, state()}.
+init(ConnOpts) ->
+    {ok, #{pool_name => undefined,
            connection_options => ConnOpts,
            connection => connection(ConnOpts)}}.
 
+-spec handle_call({stop} | term(), _, state()) ->
+        {stop, normal, ok, state()} |
+        {reply, error() | {ok, map() | pos_integer()}, state()} |
+        {stop, unhandled_call, state()}.
 handle_call({stop}, _From, State) ->
     {stop, normal, ok, State};
-
 handle_call(Msg, _From, State) ->
     try
         Request = make_request(Msg),
@@ -80,16 +86,20 @@ handle_call(Msg, _From, State) ->
             {stop, unhandled_call, State}
     end.
 
+-spec handle_cast(_, state()) -> {stop, unhandled_info, state()}.
 handle_cast(_Request, State) ->
     {stop, unhandled_info, State}.
 
+-spec handle_info(_, state()) -> {stop, unhandled_info, state()}.
 handle_info(_Info, State) ->
     {stop, unhandled_info, State}.
 
+-spec terminate(_, state()) -> ok.
 terminate(_Reason, #{connection := Connection}) ->
     shotgun:close(Connection),
     ok.
 
+-spec code_change(_, state(), _) -> {ok, state()}.
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
@@ -128,12 +138,10 @@ do_request(Req, #{connection := Conn}) ->
         process_response(Response)
     catch
         error:Reason ->
-            io:format("~p~n", [[Method, Uri, Body1, erlang:get_stacktrace()]]),
             {error, Reason}
     end.
 
--spec process_response({ok, response()} | error() | exception()) ->
-    response().
+-spec process_response({ok, internal_response()} | error()) -> response().
 process_response({error, _} = Response) ->
     Response;
 process_response({ok, #{status_code := Status, body := Body} = Response}) ->
