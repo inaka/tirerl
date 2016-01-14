@@ -10,6 +10,7 @@
 **Merged pull requests:**
 
 - \[\#40\] Fix for rebar.config dependency \(changed to rustyio/sync\) [\#42](https://github.com/inaka/tirerl/pull/42) ([nazar256](https://github.com/nazar256))
+- Hex Package [\#41](https://github.com/inaka/tirerl/pull/41) ([elbrujohalcon](https://github.com/elbrujohalcon))
 - \[Closes \#39\] Update erlang.mk so that dialyzer doesn't fail [\#40](https://github.com/inaka/tirerl/pull/40) ([jfacorro](https://github.com/jfacorro))
 - Make sure all uris start with / [\#38](https://github.com/inaka/tirerl/pull/38) ([elbrujohalcon](https://github.com/elbrujohalcon))
 - \[\#1\] Fix docstrings to be able to generate erldocs [\#37](https://github.com/inaka/tirerl/pull/37) ([jfacorro](https://github.com/jfacorro))
