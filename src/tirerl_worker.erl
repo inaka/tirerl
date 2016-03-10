@@ -235,9 +235,8 @@ make_request({insert_doc, Index, Type, undefined, Doc, Params}) ->
       body => Doc};
 
 make_request({insert_doc, Index, Type, Id, Doc, Params}) ->
-    Uri = make_uri([Index, Type, Id], Params),
     #{method => put,
-      uri => Uri,
+      uri => make_uri([Index, Type, Id], Params),
       body => Doc};
 
 make_request({update_doc, Index, Type, Id, Doc, Params}) ->
@@ -251,16 +250,14 @@ make_request({is_doc, Index, Type, Id}) ->
     #{method => head, uri => Uri};
 
 make_request({get_doc, Index, Type, Id, Params}) ->
-    Uri = make_uri([Index, Type, Id], Params),
-    #{method => get, uri => Uri};
+    #{method => get, uri => make_uri([Index, Type, Id], Params)};
 
 make_request({mget_doc, Index, Type, Doc}) ->
     Uri = make_uri([Index, Type, ?MGET], []),
     #{method => get, uri => Uri, body => Doc};
 
 make_request({delete_doc, Index, Type, Id, Params}) ->
-    Uri = make_uri([Index, Type, Id], Params),
-    #{method => delete, uri => Uri};
+    #{method => delete, uri => make_uri([Index, Type, Id], Params)};
 
 make_request({search, Index, Type, Doc, Params}) ->
     Uri = make_uri([Index, Type, ?SEARCH], Params),
@@ -311,20 +308,17 @@ make_request({clear_cache, Index, Params}) ->
 
 make_request({put_mapping, Indexes, Type, Doc}) ->
     IndexList = join(Indexes, <<", ">>),
-    Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
     #{method => put,
-      uri => Uri,
+      uri => join([IndexList, ?MAPPING, Type], <<"/">>),
       body => Doc};
 
 make_request({get_mapping, Indexes, Type}) ->
     IndexList = join(Indexes, <<", ">>),
-    Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
-    #{method => get, uri => Uri};
+    #{method => get, uri => join([IndexList, ?MAPPING, Type], <<"/">>)};
 
 make_request({delete_mapping, Indexes, Type}) ->
     IndexList = join(Indexes, <<", ">>),
-    Uri = join([IndexList, ?MAPPING, Type], <<"/">>),
-    #{method => delete, uri => Uri};
+    #{method => delete, uri => join([IndexList, ?MAPPING, Type], <<"/">>)};
 
 make_request({aliases, Doc}) ->
     Uri = ?ALIASES,
@@ -333,24 +327,19 @@ make_request({aliases, Doc}) ->
       body => Doc};
 
 make_request({insert_alias, Index, Alias}) ->
-    Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #{method => put, uri => Uri};
+    #{method => put, uri => join([Index, ?ALIAS, Alias], <<"/">>)};
 
 make_request({insert_alias, Index, Alias, Doc}) ->
-    Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #{method => put, uri => Uri, body => Doc};
+    #{method => put, uri => join([Index, ?ALIAS, Alias], <<"/">>), body => Doc};
 
 make_request({delete_alias, Index, Alias}) ->
-    Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #{method => delete, uri => Uri};
+    #{method => delete, uri => join([Index, ?ALIAS, Alias], <<"/">>)};
 
 make_request({is_alias, Index, Alias}) ->
-    Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #{method => head, uri => Uri};
+    #{method => head, uri => join([Index, ?ALIAS, Alias], <<"/">>)};
 
 make_request({get_alias, Index, Alias}) ->
-    Uri = join([Index, ?ALIAS, Alias], <<"/">>),
-    #{method => get, uri => Uri}.
+    #{method => get, uri => join([Index, ?ALIAS, Alias], <<"/">>)}.
 
 -spec join_list_sep([binary()], binary()) -> [any()].
 join_list_sep([Head | Tail], Sep) ->
