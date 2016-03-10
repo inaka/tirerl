@@ -10,7 +10,7 @@ dep_shotgun     = hex 0.2.3
 dep_worker_pool = hex 1.0.4
 dep_sync        = git https://github.com/rustyio/sync.git      de3c42d
 dep_mixer       = git https://github.com/inaka/mixer.git       0.1.5
-dep_katana_test = git https://github.com/inaka/katana-test.git 0.0.1
+dep_katana_test = git https://github.com/inaka/katana-test.git 0.0.3
 dep_inaka_mk    = git https://github.com/inaka/inaka.mk.git    1.0.0
 dep_hexer_mk    = git https://github.com/inaka/hexer.mk.git    1.1.0
 
