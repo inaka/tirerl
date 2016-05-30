@@ -1,5 +1,27 @@
 # Change Log
 
+## [1.0.0](https://github.com/inaka/tirerl/tree/1.0.0) (2016-05-30)
+[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.9...1.0.0)
+
+**Closed issues:**
+
+- Move from erlang.mk to rebar3 [\#48](https://github.com/inaka/tirerl/issues/48)
+- Update katana-test dependency to version 0.0.3 [\#46](https://github.com/inaka/tirerl/issues/46)
+- Update repo and make it ready for hex.pm [\#44](https://github.com/inaka/tirerl/issues/44)
+
+**Merged pull requests:**
+
+- \[Close \#48\] rebar3 support [\#49](https://github.com/inaka/tirerl/pull/49) ([Euen](https://github.com/Euen))
+- \[Fix \#46\] Update katana-test to 0.0.3; Remove test deps from rebar.config file; Fix elvis DRY warnings [\#47](https://github.com/inaka/tirerl/pull/47) ([harenson](https://github.com/harenson))
+- \[Fix \#44\] Update erlang.mk; update elvis.config file; update dependencies [\#45](https://github.com/inaka/tirerl/pull/45) ([harenson](https://github.com/harenson))
+
+## [0.1.9](https://github.com/inaka/tirerl/tree/0.1.9) (2016-01-14)
+[Full Changelog](https://github.com/inaka/tirerl/compare/0.1.8...0.1.9)
+
+**Merged pull requests:**
+
+- Switch build tools to erlang.mk and republish to hex.pm [\#43](https://github.com/inaka/tirerl/pull/43) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
 ## [0.1.8](https://github.com/inaka/tirerl/tree/0.1.8) (2016-01-06)
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.7...0.1.8)
 
