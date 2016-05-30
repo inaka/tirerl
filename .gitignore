@@ -13,3 +13,5 @@ rel/example_project
 .rebar
 .erlang.mk.*
 log*/
+_build/
+doc/
