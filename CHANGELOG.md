@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.0.1](https://github.com/inaka/tirerl/tree/1.0.1) (2016-06-08)
+[Full Changelog](https://github.com/inaka/tirerl/compare/1.0.0...1.0.1)
+
+**Closed issues:**
+
+- Version Bump to 1.0.0 [\#50](https://github.com/inaka/tirerl/issues/50)
+
+**Merged pull requests:**
+
+- Update shotgun version [\#52](https://github.com/inaka/tirerl/pull/52) ([Euen](https://github.com/Euen))
+
 ## [1.0.0](https://github.com/inaka/tirerl/tree/1.0.0) (2016-05-30)
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.9...1.0.0)
 
@@ -11,6 +22,7 @@
 
 **Merged pull requests:**
 
+- \[\#50\] version bump 1.0.0 [\#51](https://github.com/inaka/tirerl/pull/51) ([Euen](https://github.com/Euen))
 - \[Close \#48\] rebar3 support [\#49](https://github.com/inaka/tirerl/pull/49) ([Euen](https://github.com/Euen))
 - \[Fix \#46\] Update katana-test to 0.0.3; Remove test deps from rebar.config file; Fix elvis DRY warnings [\#47](https://github.com/inaka/tirerl/pull/47) ([harenson](https://github.com/harenson))
 - \[Fix \#44\] Update erlang.mk; update elvis.config file; update dependencies [\#45](https://github.com/inaka/tirerl/pull/45) ([harenson](https://github.com/harenson))
