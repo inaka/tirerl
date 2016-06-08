@@ -1,6 +1,6 @@
-[{<<"cowlib">>,{pkg,<<"cowlib">>,<<"1.0.2">>},1},
+[{<<"cowlib">>,{pkg,<<"cowlib">>,<<"1.0.2">>},2},
  {<<"gun">>,{pkg,<<"gun">>,<<"1.0.0-pre.1">>},1},
  {<<"jiffy">>,{pkg,<<"jiffy">>,<<"0.14.7">>},0},
  {<<"ranch">>,{pkg,<<"ranch">>,<<"1.1.0">>},2},
- {<<"shotgun">>,{pkg,<<"shotgun">>,<<"0.2.3">>},0},
+ {<<"shotgun">>,{pkg,<<"shotgun">>,<<"0.3.0">>},0},
  {<<"worker_pool">>,{pkg,<<"worker_pool">>,<<"1.0.4">>},0}].
