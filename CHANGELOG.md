@@ -1,14 +1,33 @@
 # Change Log
 
+## [1.0.2](https://github.com/inaka/tirerl/tree/1.0.2) (2017-05-31)
+[Full Changelog](https://github.com/inaka/tirerl/compare/1.0.1...1.0.2)
+
+**Fixed bugs:**
+
+- Move Jiffy to jsx [\#57](https://github.com/inaka/tirerl/issues/57)
+
+**Closed issues:**
+
+- Update dependencies [\#58](https://github.com/inaka/tirerl/issues/58)
+- Fulfil the open-source checklist [\#1](https://github.com/inaka/tirerl/issues/1)
+
+**Merged pull requests:**
+
+- \[Close \#57\]\[Close \#58\] :\) [\#59](https://github.com/inaka/tirerl/pull/59) ([Euen](https://github.com/Euen))
+- tirerl\_worker accepts proplists, not tuple [\#55](https://github.com/inaka/tirerl/pull/55) ([dvliman](https://github.com/dvliman))
+
 ## [1.0.1](https://github.com/inaka/tirerl/tree/1.0.1) (2016-06-08)
 [Full Changelog](https://github.com/inaka/tirerl/compare/1.0.0...1.0.1)
 
 **Closed issues:**
 
+- Version Bump to 1.0.1 [\#53](https://github.com/inaka/tirerl/issues/53)
 - Version Bump to 1.0.0 [\#50](https://github.com/inaka/tirerl/issues/50)
 
 **Merged pull requests:**
 
+- \[Close \#53\] version Bump to 1.0.1 [\#54](https://github.com/inaka/tirerl/pull/54) ([Euen](https://github.com/Euen))
 - Update shotgun version [\#52](https://github.com/inaka/tirerl/pull/52) ([Euen](https://github.com/Euen))
 
 ## [1.0.0](https://github.com/inaka/tirerl/tree/1.0.0) (2016-05-30)
