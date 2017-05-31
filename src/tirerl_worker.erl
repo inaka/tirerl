@@ -124,7 +124,7 @@ do_request(Req, #{connection := Conn}) ->
 
     Body1 = case Body of
                 Body when is_binary(Body) -> Body;
-                _ -> jiffy:encode(Body)
+                _ -> jsx:encode(Body)
             end,
 
     FullUri =
@@ -146,7 +146,7 @@ process_response({error, _} = Response) ->
     Response;
 process_response({ok, #{status_code := Status, body := Body} = Response}) ->
     try
-        Json = jiffy:decode(Body, [return_maps]),
+        Json = jsx:decode(Body, [return_maps]),
         case Status of
             Status when Status < 400 ->
                 {ok, Json};
