@@ -17,16 +17,16 @@
          code_change/3]).
 
 -type state() ::
-        #{connection => connection(),
+        #{pool_name => tirerl:pool_name(),
           connection_options => tirerl:params(),
-          pool_name => tirerl:pool_name()
+          base_url => binary()
          }.
 
 -type request() ::
         #{method => atom(),
           uri => string() | binary(),
           parameters => map(),
-          headers =>  map(),
+          headers =>  list(),
           body => string() | binary()
          }.
 
@@ -34,17 +34,16 @@
 
 -type internal_response() ::
         #{status => integer(),
-          headers => map(),
+          headers => list(),
           body => undefined | string() | binary()
          }.
 
 -type error()      :: {error, Reason :: any()}.
--type connection() :: pid().
 -type json()       :: map().
 
 -export_type([error/0, response/0]).
 
--define(DEFAULT_HOST, "localhost").
+-define(DEFAULT_HOST, <<"localhost">>).
 -define(DEFAULT_PORT, 9200).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,9 +65,12 @@ stop(ServerRef) ->
 %% ------------------------------------------------------------------
 -spec init(tirerl:params()) -> {ok, state()}.
 init(ConnOpts) ->
+    Host = proplists:get_value(host, ConnOpts, ?DEFAULT_HOST),
+    Port = proplists:get_value(port, ConnOpts, ?DEFAULT_PORT),
+
     {ok, #{pool_name => undefined,
            connection_options => ConnOpts,
-           connection => connection(ConnOpts)}}.
+           base_url => <<Host/binary, ":", (integer_to_binary(Port))/binary>>}}.
 
 -spec handle_call({stop} | term(), _, state()) ->
         {stop, normal, ok, state()} |
@@ -95,8 +97,7 @@ handle_info(_Info, State) ->
     {stop, unhandled_info, State}.
 
 -spec terminate(_, state()) -> ok.
-terminate(_Reason, #{connection := Connection}) ->
-    shotgun:close(Connection),
+terminate(_Reason, _State) ->
     ok.
 
 -spec code_change(_, state(), _) -> {ok, state()}.
@@ -107,20 +108,12 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal Function Definitions
 %% ------------------------------------------------------------------
 
-%% @doc Build a new connection
--spec connection(tirerl:params()) -> connection().
-connection(ConnectionOptions) ->
-    Host = proplists:get_value(host, ConnectionOptions, ?DEFAULT_HOST),
-    Port = proplists:get_value(port, ConnectionOptions, ?DEFAULT_PORT),
-    {ok, Pid} = shotgun:open(Host, Port),
-    Pid.
-
 -spec do_request(request(), state()) ->
     {ok, json()} | {error, term()}.
-do_request(Req, #{connection := Conn}) ->
+do_request(Req, #{base_url := BaseUrl}) ->
     #{method := Method, uri := Uri} = Req,
     Body = maps:get(body, Req, <<>>),
-    Headers = maps:get(headers, Req, #{}),
+    Headers = maps:get(headers, Req, []),
 
     Body1 = case Body of
                 Body when is_binary(Body) -> Body;
@@ -133,12 +126,25 @@ do_request(Req, #{connection := Conn}) ->
             Uri -> [$/ | Uri]
         end,
 
+    URL = <<BaseUrl/binary, (list_to_binary(FullUri))/binary>>,
+
     try
-        Response = shotgun:request(Conn, Method, FullUri, Headers, Body1, #{}),
+        Response = case hackney:request(Method, URL, Headers, Body1) of
+            {ok, StatusCode, _Headers, ClientRef} ->
+                Response1 = #{status_code => StatusCode},
+                case hackney:body(ClientRef) of
+                    {ok, ResponseBody} ->
+                        {ok, Response1#{body => ResponseBody}};
+                    {error, _} ->
+                        {ok, Response1}
+                end;
+            {error, Reason} ->
+                {error, Reason}
+        end,
         process_response(Response)
     catch
-        error:Reason ->
-            {error, Reason}
+        error:Reason1 ->
+            {error, Reason1}
     end.
 
 -spec process_response({ok, internal_response()} | error()) -> response().

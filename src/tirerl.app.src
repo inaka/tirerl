@@ -7,7 +7,7 @@
     [kernel,
      stdlib,
      jsx,
-     shotgun,
+     hackney,
      worker_pool
     ]},
   {modules, []},
