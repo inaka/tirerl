@@ -138,6 +138,8 @@ do_request(Req, #{base_url := BaseUrl}) ->
                     {error, _} ->
                         {ok, Response1}
                 end;
+            {ok, StatusCode, _Headers} ->
+                {ok, #{status_code => StatusCode}};
             {error, Reason} ->
                 {error, Reason}
         end,
