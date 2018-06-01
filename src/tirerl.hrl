@@ -13,6 +13,7 @@
 -define(MGET, <<"_mget">>).
 -define(COUNT, <<"_count">>).
 -define(QUERY, <<"_query">>).
+-define(DELETE_BY_QUERY, <<"_delete_by_query">>).
 -define(OPTIMIZE, <<"_optimize">>).
 -define(SEGMENTS, <<"_segments">>).
 -define(CLEAR_CACHE, <<"_cache/clear">>).
