@@ -223,7 +223,7 @@ make_request({count, Index, Type, Doc, Params}) ->
 make_request({delete_by_query, Index, Type, Doc, Params}) ->
     IndexList = join(Index, <<", ">>),
     TypeList = join(Type, <<", ">>),
-    Uri = make_uri([IndexList, TypeList, ?QUERY], Params),
+    Uri = make_uri([IndexList, TypeList, ?DELETE_BY_QUERY], Params),
     #{method => post, uri => Uri, body => Doc};
 
 make_request({is_index, Index}) ->
