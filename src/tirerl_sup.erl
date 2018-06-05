@@ -25,7 +25,7 @@ init(noargs) ->
     {ok, {{one_for_one, 1000, 3600}, []}}.
 
 %% Worker pool
--spec start_pool(tirerl:pool_name(), list()) -> {ok, pid()}.
+-spec start_pool(tirerl:pool_name(), list()) -> supervisor:startchild_ret().
 start_pool(Name, Opts) ->
     WPoolOptions  = [{overrun_warning, infinity},
                      {overrun_handler, {error_logger, warning_report}},
