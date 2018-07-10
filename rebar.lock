@@ -1,24 +1,26 @@
 {"1.1.0",
-[{<<"certifi">>,{pkg,<<"certifi">>,<<"1.2.1">>},1},
- {<<"eper">>,{pkg,<<"eper">>,<<"0.94.0">>},0},
- {<<"hackney">>,{pkg,<<"hackney">>,<<"1.8.6">>},0},
- {<<"idna">>,{pkg,<<"idna">>,<<"5.0.2">>},1},
- {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.2">>},0},
+[{<<"certifi">>,{pkg,<<"certifi">>,<<"2.3.1">>},1},
+ {<<"hackney">>,{pkg,<<"hackney">>,<<"1.13.0">>},0},
+ {<<"idna">>,{pkg,<<"idna">>,<<"5.1.2">>},1},
+ {<<"jsx">>,{pkg,<<"jsx">>,<<"2.9.0">>},0},
  {<<"metrics">>,{pkg,<<"metrics">>,<<"1.0.1">>},1},
  {<<"mimerl">>,{pkg,<<"mimerl">>,<<"1.0.2">>},1},
+ {<<"parse_trans">>,{pkg,<<"parse_trans">>,<<"3.2.0">>},2},
+ {<<"redbug">>,{pkg,<<"redbug">>,<<"1.2.1">>},0},
  {<<"ssl_verify_fun">>,{pkg,<<"ssl_verify_fun">>,<<"1.1.1">>},1},
- {<<"unicode_util_compat">>,{pkg,<<"unicode_util_compat">>,<<"0.2.0">>},2},
- {<<"worker_pool">>,{pkg,<<"worker_pool">>,<<"2.2.3">>},0}]}.
+ {<<"unicode_util_compat">>,{pkg,<<"unicode_util_compat">>,<<"0.3.1">>},2},
+ {<<"worker_pool">>,{pkg,<<"worker_pool">>,<<"3.1.1">>},0}]}.
 [
 {pkg_hash,[
- {<<"certifi">>, <<"C3904F192BD5284E5B13F20DB3CEAC9626E14EEACFBB492E19583CF0E37B22BE">>},
- {<<"eper">>, <<"F5FB2DAA0DF8878748E1C598428EDA942A173E5121FF35C1D632129B84593A3A">>},
- {<<"hackney">>, <<"21A725DB3569B3FB11A6AF17D5C5F654052CE9624219F1317E8639183DE4A423">>},
- {<<"idna">>, <<"AC203208ADA855D95DC591A764B6E87259CB0E2A364218F215AD662DAA8CD6B4">>},
- {<<"jsx">>, <<"7ACC7D785B5ABE8A6E9ADBDE926A24E481F29956DD8B4DF49E3E4E7BCC92A018">>},
+ {<<"certifi">>, <<"D0F424232390BF47D82DA8478022301C561CF6445B5B5FB6A84D49A9E76D2639">>},
+ {<<"hackney">>, <<"24EDC8CD2B28E1C652593833862435C80661834F6C9344E84B6A2255E7AEEF03">>},
+ {<<"idna">>, <<"E21CB58A09F0228A9E0B95EAA1217F1BCFC31A1AAA6E1FDF2F53A33F7DBD9494">>},
+ {<<"jsx">>, <<"D2F6E5F069C00266CAD52FB15D87C428579EA4D7D73A33669E12679E203329DD">>},
  {<<"metrics">>, <<"25F094DEA2CDA98213CECC3AEFF09E940299D950904393B2A29D191C346A8486">>},
  {<<"mimerl">>, <<"993F9B0E084083405ED8252B99460C4F0563E41729AB42D9074FD5E52439BE88">>},
+ {<<"parse_trans">>, <<"2ADFA4DAF80C14DC36F522CF190EB5C4EE3E28008FC6394397C16F62A26258C2">>},
+ {<<"redbug">>, <<"9153EE50E42C39CE3F6EFA65EE746F4A52896DA66862CFB59E7C0F838B7B8414">>},
  {<<"ssl_verify_fun">>, <<"28A4D65B7F59893BC2C7DE786DEC1E1555BD742D336043FE644AE956C3497FBE">>},
- {<<"unicode_util_compat">>, <<"DBBCCF6781821B1C0701845EAF966C9B6D83D7C3BFC65CA2B78B88B8678BFA35">>},
- {<<"worker_pool">>, <<"2CD7B2C289B900940297D283922D7E119C540CB8F29B5254639ABB9BFB100CAE">>}]}
+ {<<"unicode_util_compat">>, <<"A1F612A7B512638634A603C8F401892AFBF99B8CE93A45041F8AACA99CADB85E">>},
+ {<<"worker_pool">>, <<"A9BF27CFF366999784A3F0657F016CE3A57901490858CCA3FB3BE1208BF2110D">>}]}
 ].
