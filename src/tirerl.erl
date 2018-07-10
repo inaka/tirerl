@@ -125,7 +125,7 @@ start_pool(PoolName, Options) when is_list(Options) ->
     tirerl_sup:start_pool(PoolName, Options).
 
 %% @doc Stop a worker pool instance
--spec stop_pool(pool_name()) -> ok | tirerl_worker:error().
+-spec stop_pool(pool_name()) -> true.
 stop_pool(Name) ->
     wpool:stop_pool(Name).
 
