@@ -1,5 +1,26 @@
 # Change Log
 
+## [1.1.0](https://github.com/inaka/tirerl/tree/1.1.0) (2018-07-13)
+[Full Changelog](https://github.com/inaka/tirerl/compare/1.0.2...1.1.0)
+
+**Closed issues:**
+
+- wpool:stop\_sup\_pool\(\) can't fire gen\_server terminate\(\) [\#73](https://github.com/inaka/tirerl/issues/73)
+- tirerl:delete\_by\_query uses wrong URI [\#72](https://github.com/inaka/tirerl/issues/72)
+- Sync the names of start/stop functions better [\#71](https://github.com/inaka/tirerl/issues/71)
+- Delete by query uses wrong method and resource [\#67](https://github.com/inaka/tirerl/issues/67)
+- is\_index/2 returns error [\#65](https://github.com/inaka/tirerl/issues/65)
+- replace shotgun [\#62](https://github.com/inaka/tirerl/issues/62)
+
+**Merged pull requests:**
+
+- Fix typespec of tirerl\_sup:start\_pool/2 [\#75](https://github.com/inaka/tirerl/pull/75) ([arkgil](https://github.com/arkgil))
+- Fix request path of delete\_by\_query action [\#74](https://github.com/inaka/tirerl/pull/74) ([arkgil](https://github.com/arkgil))
+- Error when stopping named pool [\#70](https://github.com/inaka/tirerl/pull/70) ([arkgil](https://github.com/arkgil))
+- \[Close \#67\] Update delete\_by\_query to the correct method [\#69](https://github.com/inaka/tirerl/pull/69) ([Euen](https://github.com/Euen))
+- \[\#65\] is\_index was returning error [\#66](https://github.com/inaka/tirerl/pull/66) ([ferigis](https://github.com/ferigis))
+- \[\#62\] replacing shotgun per hackney [\#63](https://github.com/inaka/tirerl/pull/63) ([ferigis](https://github.com/ferigis))
+
 ## [1.0.2](https://github.com/inaka/tirerl/tree/1.0.2) (2017-05-31)
 [Full Changelog](https://github.com/inaka/tirerl/compare/1.0.1...1.0.2)
 
@@ -9,11 +30,13 @@
 
 **Closed issues:**
 
+- Bump version to 1.0.2 [\#60](https://github.com/inaka/tirerl/issues/60)
 - Update dependencies [\#58](https://github.com/inaka/tirerl/issues/58)
 - Fulfil the open-source checklist [\#1](https://github.com/inaka/tirerl/issues/1)
 
 **Merged pull requests:**
 
+- \[Close \#60\] bump version to 1.0.2 [\#61](https://github.com/inaka/tirerl/pull/61) ([Euen](https://github.com/Euen))
 - \[Close \#57\]\[Close \#58\] :\) [\#59](https://github.com/inaka/tirerl/pull/59) ([Euen](https://github.com/Euen))
 - tirerl\_worker accepts proplists, not tuple [\#55](https://github.com/inaka/tirerl/pull/55) ([dvliman](https://github.com/dvliman))
 
