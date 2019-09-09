@@ -113,7 +113,8 @@ code_change(_OldVsn, State, _Extra) ->
 do_request(Req, #{base_url := BaseUrl}) ->
     #{method := Method, uri := Uri} = Req,
     Body = maps:get(body, Req, <<>>),
-    Headers = maps:get(headers, Req, []),
+    Headers = maps:get(headers, Req,
+                       [{<<"Content-Type">>, <<"application/json">>}]),
 
     Body1 = case Body of
                 Body when is_binary(Body) -> Body;
