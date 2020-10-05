@@ -1,6 +1,19 @@
-# Change Log
+# Changelog
+
+## [1.2.0](https://github.com/inaka/tirerl/tree/1.2.0) (2020-10-05)
+
+[Full Changelog](https://github.com/inaka/tirerl/compare/1.1.0...1.2.0)
+
+**Closed issues:**
+
+- Getting unsupported content type header "application/octet-stream" on elasticsearch `7.6.2` [\#78](https://github.com/inaka/tirerl/issues/78)
+
+**Merged pull requests:**
+
+- Add content type 'application/json' to request header [\#77](https://github.com/inaka/tirerl/pull/77) ([hongyuan1306](https://github.com/hongyuan1306))
 
 ## [1.1.0](https://github.com/inaka/tirerl/tree/1.1.0) (2018-07-13)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/1.0.2...1.1.0)
 
 **Closed issues:**
@@ -14,6 +27,7 @@
 
 **Merged pull requests:**
 
+- Bump Version to 1.1.0 [\#76](https://github.com/inaka/tirerl/pull/76) ([elbrujohalcon](https://github.com/elbrujohalcon))
 - Fix typespec of tirerl\_sup:start\_pool/2 [\#75](https://github.com/inaka/tirerl/pull/75) ([arkgil](https://github.com/arkgil))
 - Fix request path of delete\_by\_query action [\#74](https://github.com/inaka/tirerl/pull/74) ([arkgil](https://github.com/arkgil))
 - Error when stopping named pool [\#70](https://github.com/inaka/tirerl/pull/70) ([arkgil](https://github.com/arkgil))
@@ -22,6 +36,7 @@
 - \[\#62\] replacing shotgun per hackney [\#63](https://github.com/inaka/tirerl/pull/63) ([ferigis](https://github.com/ferigis))
 
 ## [1.0.2](https://github.com/inaka/tirerl/tree/1.0.2) (2017-05-31)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/1.0.1...1.0.2)
 
 **Fixed bugs:**
@@ -41,6 +56,7 @@
 - tirerl\_worker accepts proplists, not tuple [\#55](https://github.com/inaka/tirerl/pull/55) ([dvliman](https://github.com/dvliman))
 
 ## [1.0.1](https://github.com/inaka/tirerl/tree/1.0.1) (2016-06-08)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/1.0.0...1.0.1)
 
 **Closed issues:**
@@ -54,6 +70,7 @@
 - Update shotgun version [\#52](https://github.com/inaka/tirerl/pull/52) ([Euen](https://github.com/Euen))
 
 ## [1.0.0](https://github.com/inaka/tirerl/tree/1.0.0) (2016-05-30)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.9...1.0.0)
 
 **Closed issues:**
@@ -70,6 +87,7 @@
 - \[Fix \#44\] Update erlang.mk; update elvis.config file; update dependencies [\#45](https://github.com/inaka/tirerl/pull/45) ([harenson](https://github.com/harenson))
 
 ## [0.1.9](https://github.com/inaka/tirerl/tree/0.1.9) (2016-01-14)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.8...0.1.9)
 
 **Merged pull requests:**
@@ -77,6 +95,7 @@
 - Switch build tools to erlang.mk and republish to hex.pm [\#43](https://github.com/inaka/tirerl/pull/43) ([elbrujohalcon](https://github.com/elbrujohalcon))
 
 ## [0.1.8](https://github.com/inaka/tirerl/tree/0.1.8) (2016-01-06)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.7...0.1.8)
 
 **Closed issues:**
@@ -94,6 +113,7 @@
 - Updated license [\#35](https://github.com/inaka/tirerl/pull/35) ([spike886](https://github.com/spike886))
 
 ## [0.1.7](https://github.com/inaka/tirerl/tree/0.1.7) (2015-06-06)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.6...0.1.7)
 
 **Closed issues:**
@@ -106,6 +126,7 @@
 - Upgrade shotgun dep to 0.1.11 [\#33](https://github.com/inaka/tirerl/pull/33) ([elbrujohalcon](https://github.com/elbrujohalcon))
 
 ## [0.1.6](https://github.com/inaka/tirerl/tree/0.1.6) (2015-05-19)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.5...0.1.6)
 
 **Closed issues:**
@@ -120,6 +141,7 @@
 - \[Fix \#27\] Version Bump to 0.1.5 [\#28](https://github.com/inaka/tirerl/pull/28) ([davecaos](https://github.com/davecaos))
 
 ## [0.1.5](https://github.com/inaka/tirerl/tree/0.1.5) (2015-05-19)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.4...0.1.5)
 
 **Closed issues:**
@@ -131,6 +153,7 @@
 - \[Fix \#25\] Version Bump 0.1.5 - Shotgun updated dependency to 0.1.9 [\#26](https://github.com/inaka/tirerl/pull/26) ([davecaos](https://github.com/davecaos))
 
 ## [0.1.4](https://github.com/inaka/tirerl/tree/0.1.4) (2015-05-12)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.3...0.1.4)
 
 **Closed issues:**
@@ -145,6 +168,7 @@
 - \[\#19\] Updated change log [\#21](https://github.com/inaka/tirerl/pull/21) ([davecaos](https://github.com/davecaos))
 
 ## [0.1.3](https://github.com/inaka/tirerl/tree/0.1.3) (2015-04-20)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.2...0.1.3)
 
 **Merged pull requests:**
@@ -152,6 +176,7 @@
 - \[\#19\] Fix shotgun dependency issue, from 0.1.7 to 0.1.8 version [\#20](https://github.com/inaka/tirerl/pull/20) ([davecaos](https://github.com/davecaos))
 
 ## [0.1.2](https://github.com/inaka/tirerl/tree/0.1.2) (2015-04-09)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.1...0.1.2)
 
 **Merged pull requests:**
@@ -159,6 +184,7 @@
 - Update dependencies [\#18](https://github.com/inaka/tirerl/pull/18) ([elbrujohalcon](https://github.com/elbrujohalcon))
 
 ## [0.1.1](https://github.com/inaka/tirerl/tree/0.1.1) (2014-10-22)
+
 [Full Changelog](https://github.com/inaka/tirerl/compare/0.1.0...0.1.1)
 
 **Merged pull requests:**
@@ -166,6 +192,9 @@
 - Fixed rebar.config to not use the git account for github. [\#15](https://github.com/inaka/tirerl/pull/15) ([AxisOfEval](https://github.com/AxisOfEval))
 
 ## [0.1.0](https://github.com/inaka/tirerl/tree/0.1.0) (2014-10-15)
+
+[Full Changelog](https://github.com/inaka/tirerl/compare/fb47b5126de678434691ef67180f39fe5658ccd4...0.1.0)
+
 **Implemented enhancements:**
 
 - Return standard {ok, \_} and {error, \_} tuples from API calls [\#11](https://github.com/inaka/tirerl/issues/11)
@@ -192,4 +221,4 @@
 
 
 
-\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
