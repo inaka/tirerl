@@ -12,7 +12,6 @@
   {modules, []},
   {registered, []},
   {mod, {tirerl, []}},
-  {maintainers,["Inaka"]},
   {licenses,["Apache 2.0"]},
   {links,[{"Github","https://github.com/inaka/tirerl"}]},
   {build_tools,["erlang.mk", "rebar"]}
